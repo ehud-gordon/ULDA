@@ -1,0 +1,258 @@
+\documentclass{article}
+\usepackage{preamble}
+\input{preamble}
+\graphicspath{ {images/} }
+%%%%%%%%%%%%%%%% Document %%%%%%%%%%%%%%%%
+\begin{document}
+\begin{center}
+  {\huge \underline{Unsupervised Learning and Data Analysis} \\[5pt] \ul{Homework 1}}
+\end{center}
+\section*{Question 4 - PCA}
+\begin{enumerate}[label=\textbf{\large\arabic*)}]
+
+  \item 
+\begin{claim}
+(Courant-Fischer): Let $S \in \mathbb{R}^{m \times n}$ be a collection of $m$ samples $(s_1, \ldots, s_m)$, each $s_i \in \mathbb{R}^{n}$. 
+  Assume the samples are centered, i.e. $\bm{1}^{T} S = \bm{0}^{T}$.  
+Let $C = S ^{T}S$, and $v_1$ be the largest eigenvalue of $C$. Then $v_1$ represents the direction of the largest variance of $S$. 
+\end{claim}
+
+\begin{proof} For a vector $u \in \mathbb{R}^{n}$, 
+\[
+  \text{Var}(Su) \equiv \frac{1}{m-1} \sum_{i=1}^{m} (s_i ^{T} u- \mu) ^2
+\]
+    where
+    \[
+      \mu = \sum_{i=1}^{m} s_i ^{T} u = \bm{1}^{T}Su
+    \]
+   Since $S$ is centered, we get that $\mu=0$, and therefore:
+    \[
+      \text{Var}(Su) = \frac{1}{m-1} \sum_{i=1}^{m} (s_i ^{T} u) ^2 = \frac{1}{m-1} \lVert Su \rVert ^2 = \frac{1}{m-1} u ^{T} C u
+    \]
+    
+
+    Therefore, the unit vector that will maximize $\text{Var}(Su)$ is: 
+    \[
+      \argmax_{\lVert v \rVert ^2 =1} u^{T} C u
+    \]
+    
+
+ Since $C$ is PSD, it has an orthonormal eigenbasis $\left\{ v_i \right\}_{i=1}^{n}$, and we can write:
+    \[
+      C = \sum_{i=1}^{n} \lambda_i v_i  v_i ^{T}
+    \]
+   since $C$ is PSD, we have that $\lambda_i \geq 0$ for all $i$.  
+    Let $u = \sum_{i=1}^{n} a_i v_i$ be a unit vector (such a representation exists and is unique because the eigenvectors form a basis). Then:
+\begin{align*}
+      u ^{T} C u &= u ^{T} \big( C \sum_{i=1}^{n} a_i v_i \big) = u ^{T} \big( \sum_{j=1}^{n} \lambda_j v_j v_j ^{T} (\sum_{i=1}^{n} a_i v_i) \big)  \\
+      &= u ^{T} \big( \sum_{j=1}^{n}  \lambda_j v_j \langle v_j, \sum_{i=1}^{n} a_i v_i \rangle \big) 
+       = u ^{T} \big( \sum_{j=1}^{n} \lambda_j a_{j} v_j  \big) \tag{$v_i ^{T} v_j = \delta_{ij}$} \\
+      &= (\sum_{i=1}^{n} a_i v_i)^{T} \big( \sum_{j=1}^{n} a_j \lambda_j v_j \big) 
+      = \sum_{i=1}^{n} a_i \langle v_i, \sum_{j=1}^{n} a_j \lambda_j v_j \rangle \\
+      &= \sum_{i=1}^{n} a_i a_i \lambda_i   \tag{ $v_i ^{T} v_j = \delta_{ij}$} \\
+      & \leq \sum_{i=1}^{n} a_i ^2 \lambda_1  \tag{$\lambda_1$ is largest } \\
+      &= \lambda_1 \lVert u \rVert  ^2  
+      = \lambda_1 \tag{ $\lVert u \rVert ^2 = 1$} 
+    \end{align*}
+   so for every $u \in \mathbb{R}^{n}$, $u ^{T} C u \leq \lambda_1$
+  and in particular:
+  \begin{align*}
+    v_1 ^{T} C v_1 = v_1 ^{T} \lambda_1 v_1 = \lambda_1 \lVert v_1 \rVert ^2 = \lambda_1
+  \end{align*}
+  i.e. the maximum is achieved by $v_1$, hence $v_1$ maximizes $\text{Var}(Su)$. 
+    
+  \end{proof}
+
+
+  \item 
+\begin{claim}
+  Let $X \in \mathbb{R}^{d \times n}$, with $n$ samples $\left\{ x_i \right\}_{i=1}^{n}$ and $d$ features.  Define $W := X X ^{T}$ with orthonormal eigenvectors $u_1, \ldots u_{d}$ and $\lambda_1, \ldots \lambda_{d}$. Let $P_{u_i}: \mathbb{R}^{d} \to \mathbb{R}^{d}$ be the projection operator onto $\text{span} \left\{ u_i \right\}$. 
+  Then:
+  \[
+    \sum_{j=1}^{n} \lVert P_{u_i} x_j \rVert ^2_2 = \lambda_{i}
+  \]
+\end{claim}
+\begin{proof}
+The eigenvectors are orthogonal, hence: $u_i^{T} u_j = \delta_{ij}$. Now:
+
+\begin{align*}
+  \sum_{j=1}^{n} \ \lVert P_{u_i} x_j \rVert ^2 &= \sum_{j=1}^{n}\  \lVert u_i u_i^{T} x_j \rVert ^2 \\
+  &= \sum_{j=1}^{n} \ \langle u_i u_i^{T} x_j, u_i u_i^{T} x_j \rangle \\
+  &= \sum_{j=1}^{n} \ (x_j^{T} u_i u_i^{T})( u_i u_i^{T} x_j) \\
+  &= \sum_{j=1}^{n} \ (x_j^{T} u_i) (u_i^{T} x_j) \\
+  & = \sum_{j=1}^{n}\  (u_i^{T}x_j) ^2
+\end{align*}
+
+Additionally, note that:
+\[
+  \lVert u_i^{T} X \rVert ^2 = \lVert \sum_{j=1}^{n} u_i^{T}x_j e_j \rVert ^2  \stackrel{\text{Pythagoras}}{=} \sum_{j=1}^{n} (u_{i}^{T} x_j) ^2 \lVert e_j \rVert  ^2 = \sum_{j=1}^{n} (u^{T}_{i} x_j)  ^2
+\]
+Therefore:
+  \begin{equation} \label{q42:projections}
+  \sum_{j=1}^{n} \ \lVert P_{u_i} x_j \rVert ^2 =  \lVert u^{T}_{i} X \rVert  ^2
+\end{equation}
+via SVD, we have that $X = U \Sigma V^{T}$, with . In particular, $W = U \Lambda U^{T}$, and also
+  \[
+    W = X X^{T} = U \Sigma \Sigma ^{T} U^{T}
+  \]
+Therefore $\sigma_i ^2 = \lambda_i ^2$. 
+
+Additionally
+\begin{align*}
+  u_i ^{T} X = u_i ^{T} U \Sigma V^{T} = e_i^{T} \Sigma V^{T} = \begin{bmatrix} 0, \ldots, \overbrace{\sigma_i}^{i-th}, \ldots 0 \end{bmatrix} V^{T} = \sigma_i v_i^{T}
+\end{align*}
+
+And therefore:
+\begin{equation} \label{q42:lambdas}
+ \begin{aligned}
+  \lVert u_i^{T} X \rVert  ^2 &= \sigma_i ^2 \lVert v_i \rVert ^2\\
+   &= \sigma_i ^2  \qquad \text{($V$ orthonormal)}  \\
+  &= \lambda_i ^2 
+\end{aligned}
+\end{equation}
+
+
+Concluding, 
+\begin{align*}
+  \sum_{j=1}^{n} \lVert P_{u_i} x_j \rVert ^2  & = \lVert u_i^{T} X \rVert  ^2  \tag{Eq. \ref{q42:projections}}\\
+  & = \lambda_i ^2 \tag{Eq. \ref{q42:lambdas}}
+\end{align*}
+\end{proof}
+  
+\end{enumerate}
+
+
+\section*{Question 5}
+\subsection*{Question 5.1}
+
+\subsection*{Question 5.2: Comparing Statistical and Geometrical PCA}
+\ul{TL:DR} skip over Statistical POV and Geometric POV, I wrote them just to introduce notation. Go to \ul{Difference in Optimization}. 
+
+
+\ul{Statistical POV}: We treat $\bm{x} \in \mathbb{R}^{D}$ as a random vector, aka a multivariate random variable. We assume features are scaled, i.e. $E[x_i]=0$ and $\text{Var}[x_i]=1$.  Generally, $E[x_i x_j] \neq 0$, therefore the features are correlated. We wish to find a representation $\bm{y} \in \mathbb{R}^{d}$, $d <<D$, given as a \ul{linear} combination of $\bm{x}$, i.e. $\bm{y}=A \bm{x}, A \in \mathbb{R}^{d \times D}$, such that the features are \ul{uncorrelated}, i.e.
+\[
+  Cov[y_i,y_j]= E[y_i y_j] - E[y_i] E[y_j] =  0
+\]
+and since $E[y_i]=E[y_j]=0$, this means we look for $E[y_i y_j]=0$. In addition, we look for the most "meaningful" uncorrelated directions - those directions along which $\bm{x}$ varies the most. How do we capture this? Recall that with the random matrix:
+\[
+  P_{x} = \bm{x} \bm{x}^{T}
+\]
+and $Cov[\bm{x}] = E[\bm{x} \bm{x}^{T}]$
+we can measure the variance of the projection of $\bm{x}$ along a vector $\bm{u}$ by:
+\[
+  Var[\bm{u} ^{T} \bm{x}] = \bm{u}^{T} E[\bm{x} \bm{x}^{T}] \bm{u} = E[\bm{u}^{T} \bm{x} \bm{x} ^{T} \bm{u}] = E[(\bm{u}^{T} \bm{x}) ^2]
+\]
+
+This gives the objective function:
+\begin{gather*}
+  \bm{u}_{i} ^{\star} = \argmax_{\bm{u}_i} E[(\bm{u}_i ^{T} \bm{x})^2]   \\
+  \text{s.t. } \bm{u}_i ^{T} \bm{u}_{j} = \delta_{ij} \text{ for } j \leq i
+\end{gather*}
+Since $Var[\bm{u}^{T} \bm{x}] = \bm{u}^{T} P_{x} \bm{u}$, we have from Courant-Fischer that the largest eigenvectors of $P_{x}$ are those that maximize it. 
+
+
+\ul{Geometrical POV}: Let $X \in \mathbb{R}^{D \times  n}$, where $D$ is number of features and $n$ is number of samples. Assume the data is centered, there are no redundant features, and $n \geq D$, i.e. $\myrank(X) = D$.  Denote by $Y \in \mathbb{R}^{d \times  n}$ an encoding of $X$, and denote by   $\widetilde{X} \in \mathbb{R}^{D \times  n}$ a reconstruction of $X$ using $Y$.
+
+
+MSE Objective: We wish, using \ul{linear} operators, to find $\widetilde{X}$ s.t.:
+  \[
+    \min_{\widetilde{X}} \lVert X - \widetilde{X} \rVert_{F}^2
+  \]
+Since both the encoding and decoding is done via linear operators, we can write:
+\[
+  \min_{\widetilde{X}} \lVert X - \widetilde{X} \rVert_{F}^2 \ \text{ s.t. } \ \widetilde{X} = U_{2}Y = U_{2} U_{1}X \quad  U_1 \in \mathbb{R}^{d \times  D}, U_2 \in \mathbb{R}^{D \times d}
+\]
+
+Solution: PCA. Let $\hat{P} = \frac{1}{n} X X^{T}$ be the covariance matrix, and let $U$ be the first $d$ largest eigenvectors of $\hat{P}$. Then $U_1 = U ^{T}, U_2 = U$.
+
+\ul{Difference in Optimization}: For Geometrical PCA, the objective function is Minimal MSE:
+\begin{gather*}
+  \min_{\widetilde{X}} \lVert X - \widetilde{X} \rVert _F ^2 \\
+  \text{s.t. } \widetilde{X} = U_{2}U_{1}X 
+\end{gather*}
+whereas for Statistical PCA, the objective function is Variance Maximization:
+\begin{gather*}
+  \bm{u}_{i} ^{\star} = \argmax_{\bm{u}_i} E[(\bm{u}_i ^{T} \bm{x})^2]   \\
+  \text{s.t. } \bm{u}_i ^{T} \bm{u}_{j} = \delta_{ij} \text{ for } j \leq i
+\end{gather*}
+this leads to the following differences:
+\begin{itemize}
+
+  \item Goal: Statistical PCA aims to maximize variance, whereas Geometrical PCA aims to minimize reconstruction error. Each one achieves also the other's goals, but implicitly. 
+  \item Constraints and Uniqueness: Statistical MSE requires uncorrelated transformed features, whereas Geometrical PCA places no constraints (besides linearity, like Statistical PCA) on the transformed features. as we explain below, this causes Geometrical PCA to have redundant solutions, that Statistical PCA does not have.
+\end{itemize}
+
+\ul{Redundancy in the MSE solution}: Geometric PCA is not-unique, statistical PCA is* (up to distinct eigenvalues and multiplication by $-1$).  Notice that for every orthogonal matrix $R \in \mathbb{R}^{d \times d}$, we have that $U_1 = (UR)^{T}, U_2 = (UR)$ is also a minimizer.  Denote $\widetilde{U}=UR$. 
+
+For example, if our data really only has entries in the first two entries, then we can encode it to $X-Y$ plane. 
+However every rotation following this projection would also serve, provided the decoder also includes the inverse rotation. 
+
+I.e. the encoding $Y$ isn't unique.  
+However, statistical PCA is unique - how can this be? 
+The answer is that in statistical PCA, we add a requirement that there is no correlation between the features (i.e. they are orthogonal), i.e. every row (feature) of $Y$ is uncorrelated with every other row. 
+ f $Y = U^{T} X \in \mathbb{R}^{d \times  n}$, then we have that $E[Y Y ^{T}] = \Lambda = \text{diag}(\lambda_1, \ldots, \lambda_{d})$, i.e. the encodings are not correlated. 
+However, for $\widetilde{Y} = \widetilde{U}^{T} X = (UR)^{T} X$, we have that:
+\[
+  E[\widetilde{Y} \widetilde{Y}^{T} ] = R^{T} \Lambda R
+\]
+i.e. there can be non-zero off-diagonal elements, and hence the features can be  correlated, unlike (statistical) PCA. 
+
+Therefore, there are infinite solutions in the encoder-decoder framework, which are "redundant". 
+
+\subsection*{Question 5.3}
+Let $X \in \mathbb{R}^{d \times n}$, with $n$ samples. Assume the data is centered, that is
+\[
+  X \bm{1}_{n} = \bm{0}_{n}
+\]
+Let $k(\bm{x},\bm{y}) = \bm{x}^{t} \bm{y}$. Define the kernel matrix (Gram matrix) $K \in \mathbb{R}^{n \times n}$:
+\[
+  K_{ij} = k(\bm{x}_i, \bm{x}_j) = \bm{x}_i ^{T} \bm{x}_j
+\]
+Therefore:
+\[
+  K = X^{T} X
+\]
+We center the kernel matrix:
+\[
+  K_{c} := K - \frac{1}{n} \bm{1}_{n} ^{T} K - \frac{1}{n} K \bm{1}_{n} + \frac{1}{n ^2} \bm{1}_{n} ^{T} K \bm{1}_{n}
+\]
+and since the data is centered and $K = X^{T}X$, we get that $K_{c} =K = X^{T}X$. 
+
+Define the covariance matrix:
+\[
+  C = \frac{1}{n} X X^{T} \in \mathbb{R}^{d \times d}
+\]
+
+Recalling the Kernel PCA algorithm, we now solve for eigenvectors $\bm{v}_{j}$ of $K_{c}$, with eigenvalues of $n \lambda_{j}$, i.e.:
+\[
+  K_{c} \bm{v}_j = n \lambda_j \bm{v}_j
+\]
+We multiply by $X$ and get:
+\begin{align*}
+  & X X ^{T} (X \bm{v}_j) = n \lambda_j (X \bm{v}_j) \\
+  \Rightarrow \  & nC (\bm{u}_j)  = n \lambda_j \bm{u}_j \\
+  \Rightarrow \ & C \bm{u}_j = \lambda_j \bm{u}_j
+\end{align*}
+I.e. for $\bm{u}_j := X \bm{v}_j$, we have that $\bm{u}_j$ is an eigenvalue of $C$ with eigenvalue $\lambda_j$. 
+
+We've shown that for Kernel PCA, the embedding $\widetilde{\bm{y}}_i$ of sample $\bm{x}_i$ is given by:
+\begin{align*}
+  \widetilde{\bm{y}}_i^{(\ell)} &= \sum_{j=1}^{n} \bm{v}_\ell^{(j)} \overline{k} (\bm{x}_i, \bm{x}_j) \\
+  &= \sum_{j=1}^{n} \bm{v}_\ell^{(j)} \bm{x}_i^{T} \bm{x}_j \\
+  &= \bm{x}_i^{T} \sum_{j=1}^{n} \bm{v}_\ell^{(j)} \bm{x}_j \\
+  &= \bm{x}_i ^{T} X \bm{v}_{\ell}
+\end{align*}
+
+Recall that for linear PCA, the embedding $y_i$ for sample $x_i$ is given by:
+\begin{align*}
+  \bm{y}_i^{(\ell)} &= \bm{x}_i ^{T} \bm{u}_{\ell}  \\
+  &= \bm{x}_i ^{T} X \bm{v}_\ell
+\end{align*}
+
+And therefore we get that:
+\[
+  \widetilde{\bm{y}_i} = \bm{y}_i
+\]
+i.e. kernel PCA with a linear kernel is exactly equivalent to linear PCA. 
+\end{document}
+
