@@ -51,14 +51,14 @@ Since $\Var[\bm{u}^{T} \bm{x}] = \bm{u}^{T} P_{x} \bm{u}$, we have from Courant-
 
 \subsubsection{Sample POV of PCA}
 
-Assume we have $n$ samples of dimension $d$, each sample denoted by $\bm{x}^{(i)} \in \mathbb{R}^{d}$. 
+Assume we have $n$ samples of dimension $D$, each sample denoted by $\bm{x}^{(i)} \in \mathbb{R}^{D}$. 
 Denote $X \in \mathbb{R}^{n \times d}$, where each row contains a sample. Assume the samples are centered. 
 PCA seeks to find the directions (principal components) that maximize the variance of the projected data.
 Let $S$ denote the sample covariance matrix:
 \[
-S \stackrel{\text{ def }}{=} \frac{1}{n-1} X^T X = \frac{1}{n-1} \sum_{i=1}^{n} \bm{x}^{(i)} (\bm{x}^{(i)})^{T} = \frac{1}{n-1} \sum_{i=1}^{n} \bm{x}^{(i)} \otimes  \bm{x}^{(i)}
+S \stackrel{\text{ def }}{=} \frac{1}{n} X^T X = \frac{1}{n} \sum_{i=1}^{n} \bm{x}^{(i)} (\bm{x}^{(i)})^{T} = \frac{1}{n} \sum_{i=1}^{n} \bm{x}^{(i)} \otimes  \bm{x}^{(i)}
 \]
-Then $S \in \mathbb{R}^{d \times d}$.
+Then $S \in \mathbb{R}^{D \times D}$.
 
 \ul{Objective Function} PCA solves the following optimization problem:
 \[
@@ -68,14 +68,14 @@ The principal components are the eigenvectors $\bm{w}$ corresponding to the larg
 \[
   S = V \Lambda V^{T}
 \]
-with $V \in \mathbb{R}^{d \times d}$, and its columns, the eigenvectors of $S$ are called the \textbf{principal directions}. 
+with $V \in \mathbb{R}^{D \times D}$, and its columns, the eigenvectors of $S$ are called the \textbf{principal directions}. 
  
 
 \ul{Limitations}: PCA can only capture linear relations when the covariance matrix is computed in the original feature space. Hence for data with nonlinear structure, PCA may not reduce dimensionality effectively. The solution is to use~\nameref{ssec:featureMapping}. 
 
 \begin{remark}[Summary]
-Let $X \in \mathbb{R}^{n \times d}$ be a matrix of $n$ samples with $d$ features each. Assume the data is centered. 
-We perform PCA by computing $S = \frac{1}{n-1} X^{T} X = V \Lambda V^{T}$. 
+Let $X \in \mathbb{R}^{n \times D}$ be a matrix of $n$ samples with $D$ features each. Assume the data is centered. 
+We perform PCA by computing $S = \frac{1}{n} X^{T} X = V \Lambda V^{T}$. 
 We call the columns of $V$ the \textbf{principal directions}. 
 We can then embed each sample of $X$ into a lower dimension $k$  by projecting it into the first $k$ principal directions, getting $k$ \textbf{principal scores}. 
 We can then reconstruct the sample by using the $k$ principal scores to take a weighted sum of the $k$ principal directions, producing a reconstruction.
@@ -101,9 +101,9 @@ They only provide measurement of the variance of the $i$-th principal direction.
 \subsection{Feature Mapping}\label{ssec:featureMapping}
 \ul{Feature Space} By mapping our data to higher feature space $\mathcal{F}$, we can separate non-linear data, as in~\cref{fig:nonLinearData}.  Denote by
 \[
-  \phi: \mathbb{R}^{d} \to \mathcal{F} \qquad \bm{x}^{(i)} \to \phi(\bm{x}^{(i)})
+  \phi: \mathbb{R}^{D} \to \mathcal{F} \qquad \bm{x}^{(i)} \to \phi(\bm{x}^{(i)})
 \]
-recall that $\bm{x}^{(i)} \in \mathbb{R}^{d}$.
+recall that $\bm{x}^{(i)} \in \mathbb{R}^{D}$.
 \begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{nonLinearData} \caption{Non-linear data. Here, the function is $\phi : \mathbb{R} \to \mathbb{R}^{2}$, with $\phi(x)=(x, x^2)$. } \label{fig:nonLinearData} \end{figure}
   In this new representation, we \textbf{can} linearly separate the samples. Note - we do need to recenter the projected samples. We will write $\phi(\bm{x}^{(i)})$ again assuming it is centered. Another assumption is that $\left\{ \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$ are linearly independent. 
 
@@ -112,8 +112,8 @@ Now we can use PCA, only we do so on the new covariance matrix:
   S_{\phi} \stackrel{\text{ def }}{=} \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi( \bm{x}^{(i)})^T
 \]
 Continuing similarly to PCA, we wish to find the (largest) eigenvectors of $S_{\phi}$. 
-If we denote $\mathcal{F}$ dimension by $m$, then $S_{\phi} \in \mathbb{R}^{m \times  m}$. 
-This suggest a new problem - if $m >> n$, then computations become expensive. Luckily, we notice that:
+If we denote $\mathcal{F}$ dimension by $|\mathcal{F}|$, then $S_{\phi} \in \mathbb{R}^{|\mathcal{F}| \times  |\mathcal{F}|}$. 
+This suggest a new problem - if $|\mathcal{F}| >> n$, then computations become expensive. Luckily, we notice that:
 
 \begin{theorem}[The kernel theorem] \hphantom{}
 
@@ -131,10 +131,9 @@ We will first prove a lemma.
 \]
 Let $\bm{w} \in \mathcal{F}$ be any vector. Then:
 \[
-  S_{\phi} \bm{w} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \bm{w} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \, \langle \, \phi(\bm{x}^{(i)}) \,, \bm{w} \, \rangle
+S_{\phi} \bm{w} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \bm{w} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \, \langle \, \phi(\bm{x}^{(i)}) \,, \bm{w} \, \rangle
 \]
-  Therefore, $S_{\phi} \bm{w}$ is a linear combination of $\phi(\bm{x}^{(i)})$, with the coefficients being  $\langle \phi(\bm{x}^{(i)}, \bm{w} \rangle$. 
-Therefore, we can express $S_{\phi} \bm{w}$ as a linear combination of $\left\{ \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$. 
+Therefore, $S_{\phi} \bm{w}$ is a linear combination of $\{  \phi(\bm{x}^{(i)}) \}_{i=1}^{n}$, with the coefficients being  $\alpha_i= \langle \, \phi(\bm{x}^{(i)}), \bm{w} \, \rangle$. 
 From the assumption that $\left\{  \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$ are linearly independent, this representation is unique. 
 
 End of Lemma
@@ -149,69 +148,65 @@ Using the lemma, we can write:
   \bm{v} = \sum_{j=1}^{n} \alpha_{j} \phi(\bm{x}^{(j)})
 \end{equation}
 
-Where $\alpha_j \in \mathbb{R}$ are the coefficients we wish to determine, and we write $\bm{\alpha}=[\alpha_{1}, \ldots, \alpha_n]^T$.  Plugging this into~\cref{eq:kernelEigenvectorDef}, we get:
+Where $\alpha_j  \in \mathbb{R}, \alpha_j = \langle \, \phi(\bm{x}^{(j)}) \,, \, \bm{v} \, \rangle$ are the coefficients we wish to determine, and we write $\bm{\alpha}=[\alpha_{1}, \ldots, \alpha_n]^T$.  Plugging this into~\cref{eq:kernelEigenvectorDef}, we get:
 \begin{align*}
   S_{\phi} \bm{v} &= \frac{1}{n} \Big( \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \Big)  \bm{v} \\
   &= \frac{1}{n} \Big( \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \Big)  \sum_{j=1}^{n} \alpha_j \phi(\bm{x}^{(j)})  \\
-  &= \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \sum_{j=1}^{n} \alpha_{j} \langle \phi(\bm{x}^{(i)}) \,, \, \phi(\bm{x}^{(j)}) \rangle
+  &= \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \sum_{j=1}^{n} \alpha_{j} \langle \, \phi(\bm{x}^{(i)}) \,, \, \phi(\bm{x}^{(j)}) \, \rangle
 \end{align*}
 Define a new matrix $K \in \mathbb{R}^{n \times  n}$ by:
 \[
-  K_{ij} = \langle \phi(\bm{x}^{(i)}), \phi(\bm{x}^{(j)}) \rangle
+  K_{ij} = \langle \, \phi(\bm{x}^{(i)}), \phi(\bm{x}^{(j)}) \, \rangle
 \]
+
+[Note - we've assumed that $\phi$ sends such that $\{  \phi(\bm{x}^{(i)}) \}_{i=1}^{n}$ are centered. Another way to have this, is to define $\overline{K} = K - \frac{1}{n}\bm{1}^{T} K - \frac{1}{n}K\bm{1} + \frac{1}{n^2} \bm{1}^{T} K \bm{1}$, i.e. subtract row and col mean, and add total mean to remedy over correction.] 
+
 Then we get that:
 \begin{align*}
-  S_{\phi} \bm{v} = \frac{1}{n} \sum_{i=1}^{n} \phi (\bm{x}^{(i)}) \sum_{j=1}^{n} \alpha_{j} K_{ij} 
+  S_{\phi} \bm{v} = \frac{1}{n} \sum_{i=1}^{n} \phi (\bm{x}^{(i)}) \sum_{j=1}^{n} \alpha_{j} \overline{K}_{ij} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) (\overline{K} \bm{\alpha})_{i}
 \end{align*}
 
-Define a new variable:
-\[
-  \beta_{i} \equiv \sum_{j=1}^{n} \alpha_j K_{ij}
-\]
-Then:
-\[
-  S_{\phi} \bm{v} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \beta_i
-\]
 Developing the RHS of~\cref{eq:kernelEigenvectorDef}, we have:
 \[
   \lambda \bm{v} = \lambda \sum_{i=1}^{n} \alpha_i \phi(\bm{x}^{(i)})
 \]
 Rewriting~\cref{eq:kernelEigenvectorDef}, we get:
 \[
-  \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \beta_i = \lambda \sum_{i=1}^{n} \alpha_i \phi(\bm{x}^{(i)})
+   \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) (\overline{K} \bm{\alpha})_{i}
+= \lambda \sum_{i=1}^{n} \alpha_i \phi(\bm{x}^{(i)})
 \]
-  From the linear independence of $\left\{ \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$, we know the coefficient for each $\phi(\bm{x}^{(i)})$ must be equal, hence we get:
+From the linear independence of $\left\{ \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$, we know the coefficient for each $\phi(\bm{x}^{(i)})$ must be equal, hence we get:
 \begin{align*}
-  & \frac{1}{n} \beta_i = \lambda \alpha_i \\
-  \Rightarrow \ & \sum_{j=1}^{n} K_{ij} \alpha_j = n \lambda \alpha_i \\
-  \Rightarrow \ & \big( K \bm{\alpha} \big)_i = n \lambda \alpha_i \\
+  &  \frac{1}{n} (\overline{K} \bm{\alpha})_i = \lambda \alpha_i \\
+  \Rightarrow \ & \big( \overline{K} \bm{\alpha} \big)_i = n \lambda \alpha_i \\
   \Rightarrow \ & K \bm{\alpha} = n \lambda \bm{\alpha}
 \end{align*}
-Therefore, the original problem of finding eigenvectors for the $m \times m$ matrix $S_{\phi}$ is actually equivalent to finding the eigenvectors of the $n \times n$ matrix  $K$. Since $m >> n$, the second task is computationally easier. Using $k$, we compute matrix $K$, find its eigenvalues $\bm{\alpha}_1, \ldots \bm{\alpha}_{m}$ with eigenvalues $\lambda_1, \ldots, \lambda_{m}$, and proceed. 
-
-Note that $K$ is defined by the inner product $K_{ij} = \langle \phi(\bm{x}^{(i)}), \phi(\bm{x}^{(j)}) \rangle$. Hence, in situations where such a computation is easy, i.e. in situations where we have a \textbf{kernel function} $k(\bm{x}^{(i)},\bm{x}^{(j)})$ such that:
-\[
-  k(\bm{x}^{(i)}, \bm{x}^{(j)}) = \langle \phi(\bm{x}^{(i)}), \phi(\bm{x}^{(j)}) \rangle
-\]
-We reduced the complexity of the problem.
+  Therefore, the original problem of finding eigenpairs $(\bm{v}, \lambda)$ for the $|\mathcal{F}| \times |\mathcal{F}|$ matrix $S_{\phi}$ is actually equivalent to finding the eigenpairs $(\bm{\alpha}, n \lambda)$ of the $n \times n$ matrix  $\overline{K}$. Since $|\mathcal{F}| >> n$, the second task is computationally easier. Using kernel function $k$, we compute (centered) matrix $\overline{K}$, find its eigenvalues $\bm{\alpha}_1, \ldots \bm{\alpha}_{n}$ with eigenvalues $n \lambda_1, \ldots, n \lambda_{n}$, and proceed. 
 \end{proof}
 \end{theorem}
 
 \subsection{Kernel PCA}
-We finish by performing kernel PCA, projecting the lifted samples $\phi(\bm{x}^{(i)})$ onto the $m$-th largest eigenvector of the (centered) kernel matrix $K$, using \textbf{only the kernel function}:
+We finish by performing kernel PCA, projecting the lifted samples $\phi(\bm{x}^{(i)})$ onto the $m$-th largest eigenvector of the (centered) kernel matrix $\overline{K}$, using \textbf{only the kernel function}:
 \[
-  k(\bm{x}^{(i)}, \bm{x}^{(j)}) = \langle \phi(\bm{x}^{(i)}, \phi(\bm{x}^{(j)}) \rangle
+  k(\bm{x}^{(i)}, \bm{x}^{(j)}) := \langle \phi(\bm{x}^{(i)}, \phi(\bm{x}^{(j)}) \rangle
 \]
-Let $\bm{\alpha}_{m} = [(\bm{\alpha}_{m})_1, \ldots, (\bm{\alpha}_{m})_n]$ denote the m-th largest eigenvector of the centered kernel matrix $K$, and $\bm{v}_{m}$ the m-th largest eigenvector of $S_{\phi}$. 
+Let $\bm{\alpha}_{m} = [(\bm{\alpha}_{m})_1, \ldots, (\bm{\alpha}_{m})_n]$ denote the m-th largest eigenvector of the centered kernel matrix $\overline{K}$. 
+Denote by $\bm{y}^{(i)} \in \mathbb{R}^{d}$ the embedding of $\bm{x}^{(i)}$ by kernel PCA using the first $d$ largest eigenvectors of $\overline{K}$. 
+Let $\bm{v}_{m}$ the m-th largest eigenvector of $S_{\phi}$. 
 Remember that $\bm{v}_{m} = \sum_{j=1}^{n} \phi(\bm{x}^{(j)}) \, (\bm{\alpha}_m)_j$. 
 Then we have that:
 \begin{align*}
-  \langle \, \phi(\bm{x}^{(i)}) \,, \, \bm{v}_{m} \, \rangle &= \langle \, \phi(\bm{x}^{(i)}) \,, \, \sum_{j=1}^{n} \phi(\bm{x}^{(j)}) (\bm{\alpha}_m)_j \, \rangle  \\
+  (\bm{y}^{(i)})_{m} =  \langle \, \phi(\bm{x}^{(i)}) \,, \, \bm{v}_{m} \, \rangle &= \langle \, \phi(\bm{x}^{(i)}) \,, \, \sum_{j=1}^{n} \phi(\bm{x}^{(j)}) (\bm{\alpha}_m)_j \, \rangle  \\
   &=  \sum_{j=1}^{n} (\bm{\alpha}_m)_j \, \langle \, \phi(\bm{x}^{(i)}) \,, \, \phi(\bm{x}^{(j)}) \, \rangle \\
-  &= \sum_{j=1}^{n} (\bm{\alpha}_m)_j \, k(i,j)
+  &= \sum_{j=1}^{n} (\bm{\alpha}_{m})_j \overline{K}_{ij} \\
+  &= (\overline{K} \bm{\alpha}_{m})_{i} 
 \end{align*}
+And therefore:
+\[
+  \begin{bmatrix} | & \ldots & | \\ \bm{y}^{(1)} & \ldots & \bm{y}^{(n)} \\ | & \ldots & | \end{bmatrix} = \begin{bmatrix} - & \bm{\alpha}_1 ^{T} & - \\ & \hdots & \\ - & \bm{\alpha}_{d}^{T} & -  \end{bmatrix} K
+\]
 
-And therefore, we can project the samples, and hence perform kernel PCA, using \textbf{only} the kernel function $k(i,j)$. 
+We create embeddings using \textbf{only} the kernel function $k$. 
 
 \begin{example}
 Consider a dataset consisting of points lying on a circle on $\mathbb{R}^{2}$:
