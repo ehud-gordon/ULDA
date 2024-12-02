@@ -135,11 +135,9 @@ S_{\phi} \bm{w} = \frac{1}{n} \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)
 \]
 Therefore, $S_{\phi} \bm{w}$ is a linear combination of $\{  \phi(\bm{x}^{(i)}) \}_{i=1}^{n}$, with the coefficients being  $\alpha_i= \langle \, \phi(\bm{x}^{(i)}), \bm{w} \, \rangle$. 
 From the assumption that $\left\{  \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$ are linearly independent, this representation is unique. 
-
-End of Lemma
 \end{lemma}
 
-Continuing - denote by $\bm{v}$ a (yet unknown) eigenvector of $S_{\phi}$, i.e.:
+Continuing the proof: denote by $\bm{v}$ a (yet unknown) eigenvector of $S_{\phi}$, i.e.:
 \begin{equation} \label{eq:kernelEigenvectorDef}
   S_{\phi} \bm{v} = \lambda \bm{v}
 \end{equation}
@@ -148,7 +146,7 @@ Using the lemma, we can write:
   \bm{v} = \sum_{j=1}^{n} \alpha_{j} \phi(\bm{x}^{(j)})
 \end{equation}
 
-Where $\alpha_j  \in \mathbb{R}, \alpha_j = \langle \, \phi(\bm{x}^{(j)}) \,, \, \bm{v} \, \rangle$ are the coefficients we wish to determine, and we write $\bm{\alpha}=[\alpha_{1}, \ldots, \alpha_n]^T$.  Plugging this into~\cref{eq:kernelEigenvectorDef}, we get:
+Where $\alpha_j  \in \mathbb{R}, \alpha_j = \langle \, \phi(\bm{x}^{(j)}) \,, \, \bm{v} \, \rangle$ are the coefficients we wish to determine. We write $\bm{\alpha}=[\alpha_{1}, \ldots, \alpha_n]^T$.  Plugging this into~\cref{eq:kernelEigenvectorDef}, we get:
 \begin{align*}
   S_{\phi} \bm{v} &= \frac{1}{n} \Big( \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \Big)  \bm{v} \\
   &= \frac{1}{n} \Big( \sum_{i=1}^{n} \phi(\bm{x}^{(i)}) \phi(\bm{x}^{(i)})^T \Big)  \sum_{j=1}^{n} \alpha_j \phi(\bm{x}^{(j)})  \\
@@ -181,7 +179,7 @@ From the linear independence of $\left\{ \phi(\bm{x}^{(i)}) \right\}_{i=1}^{n}$,
   \Rightarrow \ & \big( \overline{K} \bm{\alpha} \big)_i = n \lambda \alpha_i \\
   \Rightarrow \ & K \bm{\alpha} = n \lambda \bm{\alpha}
 \end{align*}
-  Therefore, the original problem of finding eigenpairs $(\bm{v}, \lambda)$ for the $|\mathcal{F}| \times |\mathcal{F}|$ matrix $S_{\phi}$ is actually equivalent to finding the eigenpairs $(\bm{\alpha}, n \lambda)$ of the $n \times n$ matrix  $\overline{K}$. Since $|\mathcal{F}| >> n$, the second task is computationally easier. Using kernel function $k$, we compute (centered) matrix $\overline{K}$, find its eigenvalues $\bm{\alpha}_1, \ldots \bm{\alpha}_{n}$ with eigenvalues $n \lambda_1, \ldots, n \lambda_{n}$, and proceed. 
+  Therefore, the original problem of finding eigenpairs $(\bm{v}, \lambda)$ for the $|\mathcal{F}| \times |\mathcal{F}|$ matrix $S_{\phi}$, is actually equivalent to finding the eigenpairs $(\bm{\alpha}, n \lambda)$ of the $n \times n$ matrix  $\overline{K}$. Since $|\mathcal{F}| >> n$, the second task is computationally easier. Using kernel function $k$, we compute (centered) matrix $\overline{K}$, find its eigenvalues $\bm{\alpha}_1, \ldots \bm{\alpha}_{n}$ with eigenvalues $n \lambda_1, \ldots, n \lambda_{n}$, and proceed. 
 \end{proof}
 \end{theorem}
 
