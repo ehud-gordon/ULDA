@@ -16,6 +16,65 @@
 \end{itemize}
 \end{theorem}
 
+\subsection{Matrix Determinant}
+Let $A$ be an $n \times n$ matrix. 
+The minor of $a_{ij}$ is the determinant of the submatrix of $A$ obtained by removing the $i$-th row and $j$-th column.
+Let $c_{ij}$ denote the \textbf{cofactor} of element $a_{ij}$, i.e. it's $(-1)^{i+j}$ times the minor $a_{ij}$.
+Let $C$ be the \textbf{cofactor matrix}.
+Let $A^{\#}$ denote the \textbf{adjugate matrix}, the transpose of $C$, i.e. $A^{\#}=C^{T}$.
+\begin{itemize}
+
+  \item $A A^{\#} = A^{\#}A = (\det A) I$.
+  \begin{proof}
+The diagonal elements are the determinant, as given by Laplace's equation for the determinant. \href{https://math.stackexchange.com/a/3676018/198235}{The off-diagonal are zero.}
+  \end{proof}
+  \item if $A$ is invertible, then:  $A^{\#} =  (\det A) A ^{-1}$
+  \item $(AB)^{\#} = B^{\#} A^{\#}$
+
+\end{itemize}
+
+\subsection{Kronecker and vec} 
+\begin{definition}[Kronecker Product] 
+Let \( A \) be an \( m \times n \) matrix and \( B \) a \( p \times q \) matrix. 
+The \( mp \times nq \) matrix defined by
+\[
+\begin{pmatrix}
+a_{11}B & \cdots & a_{1n}B \\
+\vdots & \ddots & \vdots \\
+a_{m1}B & \cdots & a_{mn}B
+\end{pmatrix}
+\]
+is called the \textbf{Kronecker product} of \( A \) and \( B \) and is written \( A \otimes B \).
+\end{definition}
+\begin{theorem}[Kronecker Properties] \hphantom{}
+\begin{itemize}
+  \item $a \otimes b' = a b'= b' \otimes a$
+  \item $\Tr(A \otimes B) = (\Tr A)( \Tr B )$
+  \item  $(A \otimes B) ^{-1} = A ^{-1} \otimes B ^{-1}$
+\end{itemize}
+\end{theorem}
+
+\begin{definition}[vec operator] Let \( A \) be an \( m \times n \) matrix and let \( a_j \) be its \( j \)-th column. Then \( \text{vec} \, A \) denotes the \( mn \times 1 \) vector
+\[
+\text{vec} \, A =
+\begin{pmatrix}
+a_1 \\
+a_2 \\
+\vdots \\
+a_n
+\end{pmatrix}.
+\]
+
+The \( \text{vec} \) operator thus transforms a matrix into a vector by stacking the columns of the matrix one underneath the other. 
+\end{definition}
+\begin{theorem}[Relation between vec and Kronecker product]
+\[
+  \operatorname{vec}(a b') = b \otimes a
+\]
+
+
+\end{theorem}
+
 
 \section{Week 1}
 \subsection{Principal Component Analysis (PCA)}
