@@ -7,6 +7,64 @@
 \begin{center}
   {\huge \underline{Unsupervised Learning and Data Analysis} \\[5pt] \ul{Homework 1}}
 \end{center}
+\section*{Question 1 - MLE Normal Distribution}
+Let $A$ be a matrix, let $x$ be a vector, and $|A|$ mean the determinant of a matrix.
+Let's denote
+\begin{gather}
+  \nabla_{x} Ax = A^{T} \label{eq:gradX} \\
+  \nabla_{x} x^{T}A = A \label{eq:gradXT} \\
+  \nabla_{x} x^{T}Ax = (A+A^{T} x \label{eq:gradxtAx} \\
+  \frac{\partial }{\partial A} \ln |A| = A^{-T} \label{eq:gradLnDet} \\
+  \frac{\partial }{\partial A} \Tr [AB] = B^{T} \label{eq:gradTrProd} \\
+  \Tr [A^{T} B] = (\operatorname{vec}A)^{T} \operatorname{vec}B
+\end{gather}
+Let $X_1, \ldots, X_{N} \sim \mathcal{N}(\mu, \Sigma)$ i.i.d, with $\mu \in \mathbb{R}^{d}, \Sigma \in \mathbb{R}^{d \times d}$.  \textbf{Assume} $\Sigma$ is positive definite. 
+
+The PDF of a $d$-multivariate normal random variable $X \sim \mathcal{N}(\mu, \Sigma)$ is:
+\[
+  f(x ; \mu, \Sigma) = (2 \pi)^{-d/2} | \Sigma |^{-1/2} \exp \big( -\frac{1}{2} (x-\mu)^{T} \Sigma ^{-1}  (x-\mu) \big)
+\]
+The likelihood function $L(\mu, \Sigma, x_1, \ldots  x_d)$ of $N$ iid RV is the product of their PDFs:
+\[
+  L = (2 \pi )^{-Nd/2} | \Sigma|^{-N/2} \exp \left( -\frac{1}{2} \sum_{j=1}^{N} (x_j-\mu)^{T} \Sigma ^{-1}  (x_j-\mu) \right) 
+\]
+
+And therefore the log-likelihood is:
+\begin{align*}
+  \ell &= - \frac{Nd}{2} \ln (2 \pi) - \frac{N}{2} \ln | \Sigma |  - \frac{1}{2} \sum_{j=1}^{N} (x_j- \mu)^{T} \Sigma ^{-1} (x_j - \mu) \\ 
+  &= - \frac{Nd}{2} \ln (2 \pi) + \frac{N}{2} \ln | \Sigma ^{-1} |  - \frac{1}{2} \sum_{j=1}^{N} (x_j- \mu)^{T} \Sigma ^{-1} (x_j - \mu)
+\end{align*}
+\ul{Mean}: We take the gradient wrt to $\mu$:
+\begin{align*}
+  \nabla_{\mu} \ell &= -\frac{1}{2} \sum_{j=1}^{N} \nabla_{\mu} (x_j - \mu)^{T} \Sigma ^{-1}  (x_j - \mu) \\
+  &= -\frac{1}{2} \sum_{j=1}^{N} \nabla_{\mu} \left( x_j ^{T} \Sigma ^{-1} x_j - x_j ^{T} \Sigma ^{-1}  \mu - \mu ^{T} \Sigma ^{-1}  x_j + \mu ^{T} \Sigma ^{-1}  \mu \right) \\
+ &= -\frac{1}{2} \sum_{j=1}^{N} - \Sigma ^{-1} x_j - \Sigma ^{-1} x_j + 2 \Sigma ^{-1}  \mu \\
+  &= \Sigma ^{-1}  \sum_{j=1}^{N} (x_j - \mu)
+\end{align*}
+where we've used properties~\cref{eq:gradX},~\cref{eq:gradXT} and~\cref{eq:gradxtAx}, and also the fact that $\Sigma = \Sigma ^{T}$. We set $\nabla_{\mu} \ell = 0$, and get:
+\[
+  \sum_{j=1}^{N} (x_j - \mu) = 0
+\]
+where we've used the fact that $\Sigma$ is positive definite. Therefore we get:
+\[
+  \hat{\mu}  = \frac{1}{N} \sum_{j=1}^{N}x_j
+\]
+
+
+\ul{Covariance}: We take the gradient wrt to $\Sigma ^{-1}$:
+\begin{align*}
+  \nabla_{ \Sigma ^{-1} } \ell &= \frac{N}{2} \nabla_{ \Sigma ^{-1}  } \ln | \Sigma ^{-1}  | - \frac{1}{2} \nabla_{\Sigma ^{-1} }  \sum_{j=1}^{N} \Tr \left[ (x_j - \mu)^{T} \Sigma ^{-1} (x_j - \mu) \right]  \\
+  &= \frac{N}{2 } \Sigma ^{T} - \frac{1}{2}  \nabla_{ \Sigma ^{-1} }  \sum_{j=1}^{N} \Tr \left[ (x_j - \mu) (x_j - \mu)^{T} \Sigma ^{-1}  \right] \\ 
+  &= \frac{N}{2 } \Sigma ^{T} - \frac{1}{2}  \nabla_{ \Sigma ^{-1} } \Tr \left[ \left( \sum_{j=1}^{N} (x_j-\mu) (x_j - \mu) ^{T} \right) \Sigma ^{-1}  \right]\\
+  &= \frac{N}{2} \Sigma ^{T}  - \frac{1}{2 }\left( \sum_{j=1}^{N} (x_j - \mu) (x_j - \mu) ^{T}  \right) ^{T} 
+\end{align*}
+we set to zero and transpose, and we get:
+\begin{align*}
+  & N \hat{\Sigma} = \sum_{j=1}^{N} (x_j-\mu) (x_j- \mu) ^{T}  \\
+  \Rightarrow \  & \hat{\Sigma}  = \frac{1}{N} \sum_{j=1}^{N} (x_j - \mu) (x_j - \mu)^{T} 
+\end{align*}
+
+
 \section*{Question 4 - PCA}
 \begin{enumerate}[label=\textbf{\large\arabic*)}]
 
