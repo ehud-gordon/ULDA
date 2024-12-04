@@ -16,6 +16,31 @@
 \end{itemize}
 \end{theorem}
 
+\subsection{Lagrange Multipliers - Mine}
+\begin{theorem}[Single Constraint Lagrange Multiplier]
+Let $f: \mathbb{R}^{n} \to \mathbb{R}$ be a function we wish to minimize under the constraint $g =0$, with $g: \mathbb{R}^{n} \to \mathbb{R}$.  
+\begin{figure}[H] \centering \includegraphics[height=0.2\textheight,width=0.9\textwidth,keepaspectratio]{lagrangianSingleConstraint} \caption{Lagrangian single constraint} \label{fig:lagrangianSingleConstraint} \end{figure}
+
+\end{theorem}
+\begin{theorem}[Multiple Constraints Lagrange Multipliers]
+Now assume we wish to minimize $f: \mathbb{R}^{3} \to \mathbb{R}$, under constraints of both $g_1 = 0$ and $g_2 = 0$, with $g_1, g_2: \mathbb{R}^{3} \to \mathbb{R}$. 
+
+\begin{figure}[H] \centering \includegraphics[height=0.2\textheight,width=0.9\textwidth,keepaspectratio]{lagrangeMultipleConstraints} \caption{The constraints $g_1 =0$ and $g_2=0$ visualized. \\ \href{https://www.geogebra.org/3d/nxbqmx2g}{https://www.geogebra.org/3d/nxbqmx2g}} \label{fig:lagrangeMultipleConstraints} \end{figure}
+Every point $\bm{x}$ on the constraint-surface of a constraint $g_i$ has a space of allowable directions we can walk along. 
+Note that this space is given by all vectors perpendicular to $\bm{\nabla}g_i (\bm{x})$. 
+Therefore, the set of directions that are allowed by \textit{all} constraints is the space of directions that are perpendicular to \textit{all} the gradients. 
+Let's denote the span of the gradients by $S$, and the set of allowable directions by $A$.
+Then $A = S^{\perp}$.
+\begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{lagrangeMultipleAllowable2} \caption{The blue line $A$ represents all allowable directions. The plane perpendicular to it (not shown) is $S$. } \label{fig:lagrangeMultipleAllowable2} \end{figure}
+We are interested in points where $f$ does not change as we walk. I.e. in the set of our allowed directions $A$, $f$ does not change.
+Specifically, this means that $\bm{\nabla}f \in A^{\perp} = S$. Thus, there are scalars $\lambda_1, \lambda_2$ such that:
+\[
+  \bm{\nabla}f(\bm{x}) = \sum_{i=1}^{2} \lambda_i \bm{\nabla}g_i(\bm{x})
+\]
+
+\end{theorem}
+
+
 \subsection{Lagrange Multipliers}
 Let $f: \mathbb{R}^{n} \to \mathbb{R}$, $h_i: \mathbb{R}^{n} \to \mathbb{R}$, for $i=1, \ldots, m$ be continuously differentiable functions. 
 \begin{align*}
@@ -26,7 +51,13 @@ we denote $h: \mathbb{R}^{n} \to \mathbb{R}^{m}$ by:
 \[
   h = (h_1, \ldots  h_m)
 \]
+and the constraints are $h(x)=\bm{0}$. 
+\begin{theorem}[Lagrange Multiplier Theorem]  For a given local minimum $x ^{\star}$, there exists scalars $\lambda_1, \lambda_n$, called \textit{Lagrange Multipliers}, such that:
+\[
+  \bm{\nabla}f(x ^{\star}) + \sum_{i=1}^{m}  \lambda_i \bm{\nabla} h_i(x ^{\star}) = \bm{0}
+\]
 
+\end{theorem}
 
 
 \section{Week 1}
@@ -511,5 +542,41 @@ i.e. $p_{ij}$ is bounded below, regardless of how much of an outliers $x_i$ and 
 \]
 
 The heavy tails "allows" the map to place points further apart. 
+
+
+
+\subsection{Canonical Correlation Analysis (CCA)}
+The idea is to reduce the number of variables without sacrificing too much information. 
+Whereas PCA deals with random variables that come from a single set, CCA assumes the variables come from \textbf{two} sets. We select an uncorrelated linear combination of the two sets of variables, which are pairwise highly correlated.
+
+We assume wlog that $E[X] = E[Y] = 0$ 
+
+\ul{Objective}: Given multivariate random vectors $X \in \mathbb{R}^{n}, Y \in \mathbb{R}^{m}$, find \textit{linear} mappings, $a \in \mathbb{R}^{n}, b \in \mathbb{R}^{m}$, also known as the \textbf{canonical directions}, such that for the random variables $U = a^{T}X$ and $V = b^{T}Y$, we have:
+\begin{align*}
+  & \max_{a,b} \big[ (a^{T} X) (b^{T} Y) \big] \\
+  & \operatorname*{\text{subject to}} \quad  E \left[ (a^{T}X)^2 \right] = 1 \, \  E \left[ (b^{T}Y)^2 \right] = 1 
+\end{align*}
+Denoting $\Sigma_{XX} :=E[X X^{T}]$ and $\Sigma_{yy} = E[Y Y^{T}]$ and $\Sigma_{XY} = E[X Y^{T}], \Sigma_{YX} = E[Y X^{T}]$ 
+our objective becomes
+\[
+  \max_{a,b} a^{T} \Sigma_{XY} b \quad \text{ s.t. } a^{T} \Sigma_{XX}a = 1, b^{T} \Sigma_{YY} b = 1
+\]
+
+Note that:
+\[
+  E[a^{T} X] = a^{T} E[X] = 0
+\]
+and similarly $E[b^{T} Y] = 0$
+
+We solve using Lagrange Multipliers, defining:
+\[
+  M \stackrel{\text{ def }}{=}  \Sigma_{XX}^{-1/2} \Sigma_{XY} \Sigma_{YY}^{-1/2} \in \mathbb{R}^{n \times  m}  
+\]
+
+
+
+
+
+
 \end{document}
 
