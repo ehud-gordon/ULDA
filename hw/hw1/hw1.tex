@@ -182,24 +182,23 @@ Concluding,
 
 \section*{Question 5}
 \subsection*{Question 5.1}
-We assume wlog that $\mu_{x} = \mu_{y} = \bm{0}$. Additionally, We assume both random vectors have no redundant features, i.e. no features that can be expressed as a linear combination of the others. This gives that $xx^{T}$ and $yy^{T}$ are (strictly) positive definite (and not \textit{semi}-positive definite). 
+Let $x$ be an $n \times 1$ random vector, and $y$ be an $m \times 1$ random vector.  We wish to find linear combinations $a^{T}x, b^{T}y$ of the random variables that will maximize their correlation. 
 
-
-Under these circumstance, note that   the correlation between $a^{T}x$ and $b^{T}y$ is:
+We assume wlog that $\mu_{x} = \mu_{y} = \bm{0}$. Under these circumstance, the correlation between $a^{T}x$ and $b^{T}y$ is:
 \begin{align*}
   Corr[a^{T}x, b^{T}y] &= \frac{\Cov[a^{T}x, b^{T}y]}{\sqrt{ V[a^{T}x] V[b^{T}y]}}  = \frac{a^{T} \Cov[x,y] b}{\sqrt{ E\big[(a^{T}x)^2 \big] \, E \big[(b^{T}y)^2 \big] }} \\
-  &=  \frac{a^{T} \big( E[xy^{T}] - \mu_{x} \mu_{y}^{T} \big) b}{\sqrt{ E\big[(a^{T}x)^2 \big] \, E \big[(b^{T}y)^2 \big] }} \\
+  &=  \frac{a^{T} \big( E[xy^{T}] - \mu_{x} \mu_{y}^{T} \big) b}{\sqrt{ E\big[(a^{T}x)^2 \big] \, E \big[(b^{T}y)^2 \big] }} =  \frac{a^{T} \big( E[xy^{T}] \big) b}{\sqrt{ E\big[(a^{T}x)^2 \big] \, E \big[(b^{T}y)^2 \big] }} \\
   &=  \frac{ E \big[(a^{T}x)(b^{T}y)  \big] }{\sqrt{ E\big[(a^{T}x)^2 \big] \, E \big[(b^{T}y)^2 \big] }}
 \end{align*}
-We notice that in the above expression, scaling of $a$ or $b$ don't cancel out, hence we may assume that $E \big[ (a^{T}x) ^2 \big] = 1$ and $E \big[ (b^{T}x) ^2  \big] = 1$. We put these as constraints. Then, the task of maximizing the correlation becomes:
+We notice that in the above expression, scaling $a$ or $b$ cancels out, hence we may assume that their scaling is such that $E \big[ (a^{T}x) ^2 \big] = 1$ and $E \big[ (b^{T}x) ^2  \big] = 1$. We put these as constraints. Then, the task of maximizing the correlation becomes:
 \[
-  \max_{a,b} \mathbb{E} \Big[ (a^{T}x)(b^{T}y) \Big] \quad \text{s.t. } \mathbb{E} \big[(a^{T}x)^2 \big] =, \mathbb{E} \big[(b^{T}y)^2  \big] = 1
+  \max_{a,b} \mathbb{E} \Big[ (a^{T}x)(b^{T}y) \Big] \quad \text{s.t. } \mathbb{E} \big[(a^{T}x)^2 \big] =1, \mathbb{E} \big[(b^{T}y)^2  \big] = 1
 \]
 
-The idea is to reduce the number of variables while retaining as much information as possible, just like PCA. 
+By choosing the linear combinations that have the highest correlation, we reduce the number of variables while retaining as much information as possible, just like PCA. 
 Whereas PCA deals with random variables that come from a single set, CCA assumes the variables come from \textbf{two} sets. Just like PCA, we select an \ul{uncorrelated} \ul{linear} combinations $a^{T}x$ and $b^{T}y$, which are pairwise highly correlated. We can continue to do so, finding more and more principal directions, that are highly-correlated between the sets, and are uncorrelated to previously selected principal directions. 
 
-
+As shown in Question 2, the CCA optimization problem becomes the task of maximizing a bilinear form. In PCA, we maximize a quadratic form, which is a symmetric bilinear form. 
 \subsection*{Question 5.2: Comparing Statistical and Geometrical PCA}
 \ul{TL:DR} skip over Statistical POV and Geometric POV, I wrote them just to introduce notation. Go to \ul{Difference in Optimization}. 
 
