@@ -62,7 +62,7 @@ equivalently, we define:
 \]
 and solve:
 \[
-  \bm{\nabla}_{\bm{x}, \bm{\lambda}} \mathcal{L}(\bm{x}, \bm{\lambda}) = 0 \iff \begin{cases} \bm{\nabla}_{\bm{x}} f(\bm{x}) - \displaystyle\sum_{k=1}^{m} \lambda_k \bm{\nabla}g_k(\bm{x}) = 0 \\ g_1(\bm{x}) = \ldots  = g_{m}(\bm{x}) = 0  \end{cases} 
+  \bm{\nabla}_{\bm{x}, \bm{\lambda}} \mathcal{L}(\bm{x}, \bm{\lambda}) = 0 \iff \begin{cases} \bm{\nabla}_{\bm{x}} f(\bm{x}) - \displaystyle\sum_{k=1}^{m} \lambda_k \bm{\nabla}_{\bm{x}} g_k(\bm{x}) = 0 \\ g_1(\bm{x}) = \ldots  = g_{m}(\bm{x}) = 0  \end{cases} 
 \]
 \end{theorem}
 
@@ -575,7 +575,7 @@ The heavy tails "allows" the map to place points further apart.
 The idea is to reduce the number of variables without sacrificing too much information. 
 Whereas PCA deals with random variables that come from a single set, CCA assumes the variables come from \textbf{two} sets. We select an uncorrelated linear combination of the two sets of variables, which are pairwise highly correlated.
 
-We assume wlog that $E[X] = E[Y] = 0$ 
+We assume wlog that $E[X] = E[Y] = 0$. Additionally, We assume both random vectors have no redundant features, i.e. no features that can be expressed as a linear combination of the others. This gives that $XX^{T}$ and $YY^{T}$ are (strictly) positive definite (and not \textit{semi}-positive definite). 
 
 \ul{Objective}: Given multivariate random vectors $X \in \mathbb{R}^{n}, Y \in \mathbb{R}^{m}$, find \textit{linear} mappings, $a \in \mathbb{R}^{n}, b \in \mathbb{R}^{m}$, also known as the (first) \textbf{canonical directions}, such that for the random variables $U = a^{T}X$ and $V = b^{T}Y$, we have:
 \begin{equation} \label{CCAObjective1}
@@ -585,11 +585,12 @@ We assume wlog that $E[X] = E[Y] = 0$
  \end{aligned}
 \end{equation}
 
-Denoting $\Sigma_{XX} :=E[X X^{T}]$ and $\Sigma_{YY} = E[Y Y^{T}]$ and $\Sigma_{XY} = E[X Y^{T}], \Sigma_{YX} = E[Y X^{T}]$ 
+Denoting $\Sigma_{XX} :=E[X X^{T}]$ and $\Sigma_{YY} := E[Y Y^{T}]$ and $\Sigma_{XY} := E[X Y^{T}], \Sigma_{YX} := E[Y X^{T}]$ 
 our objective becomes
-\begin{equation} \label{eq:CCAObjective2}
-\max_{a,b} a^{T} \Sigma_{XY} b \quad \text{ s.t. } a^{T} \Sigma_{XX}a = 1, b^{T} \Sigma_{YY} b = 1
-\end{equation}
+\begin{align} \label{eq:CCAObjective2}
+& \max_{a,b} a^{T} \Sigma_{XY} b \\ 
+  & \text{ s.t. } a^{T} \Sigma_{XX}a = 1 \, \ b^{T} \Sigma_{YY} b = 1 \label{eq:CCAConstraints}
+\end{align}
 
 Note that:
 \[
@@ -597,25 +598,69 @@ Note that:
 \]
 and similarly $E[b^{T} Y] = 0$. 
 
+Define:
+\[
+  M \stackrel{\text{ def }}{=}  \Sigma_{XX}^{-1/2} \Sigma_{XY} \Sigma_{YY}^{-1/2} \in \mathbb{R}^{n \times  m}  
+\]
+Then we have:
+\[
+  MM' = \Sigma_{XX}^{-1/2} \Sigma_{XY} \Sigma_{YY} ^{-1} \Sigma_{XY}^{T} \Sigma_{XX}^{-1/2} \ \in \mathbb{R}^{n \times n} \quad, \quad  M'M   = \Sigma_{YY}^{-1/2} \Sigma_{XY}^{T} \Sigma_{XX} ^{-1} \Sigma_{XY} \Sigma_{Y}^{-1/2}
+\]
+We've shown that $MM', M'M$ are PD and have the same eigenvalues. 
+
+Define:
+\[
+  B = \Sigma_{XX} ^{-1} \Sigma_{XY} \Sigma_{Y}^{-1} \Sigma_{XY}^{T} \quad, \quad  C = \Sigma_{YY} ^{-1}  \Sigma_{XY}^{T} \Sigma_{XX} \Sigma_{XY}
+\]
+
+We note that
+\begin{gather}
+  B = \Sigma_{XX}^{-1/2} MM^{T} \Sigma_{XX}^{1/2} \label{eq:CCABasMMT} \\
+  C = \Sigma_{YY}^{-1/2} M^{T} M \Sigma_{YY}^{1/2} \label{eq:CCACasMTM}
+\end{gather}
+i.e. $B$ is \textit{similar} to $MM^{T}$ and hence they have the same eigenvalues. Likewise, $C$ is similar to $M^{T}M$, and hence $MM^{T}, M^{T}M,B,C$ all have the same eigenvalues $\lambda_1 \geq \ldots \lambda_{r} > 0$, where $r$ is the rank of $\Sigma_{XY}$.  
+
 
 We Solve~\cref{eq:CCAObjective2} using Lagrange Multipliers. Define:
 \[
   L(\rho_{x}, \rho_{y}, a,b) := a^{T} \Sigma_{XY} b - \frac{\rho_{x}}{2} ( a^{T} \Sigma_{XX} a)  - \frac{\rho_{y}}{2} (b^{T} \Sigma_{YY} b)
 \]
-Differentiating, we get:
-\begin{gather*}
-  \frac{\partial L}{\partial a} = (\Sigma_{XY} b)^{T}
-\end{gather*}
+Differentiating $L$ and looking for stationary points, we get:
+\begin{gather}
+  \bm{\nabla}_{a} L = \Sigma_{XY} b - \rho_{x} \Sigma_{XX} a = \bm{0} \label{eq:CCADer1} \\
+  \bm{\nabla}_{b} L = \Sigma_{XY}^{T} a - \rho_{y} \Sigma_{YY} b = \bm{0} \label{eq:CCADer2}
+\end{gather}
+We pre-multiply by $a^{T}$ and $b^{T}$ respectively, and we get:
+\begin{gather}
+  a^{T}\Sigma_{XY} b = \rho_{x} a^{T} \Sigma_{XX} a = \rho_{x} \label{eq:CCADer3}  \\
+  b^{T} \Sigma_{XY}^{T} a = b^{T} \rho_{y} \Sigma_{YY} b  = \rho_{y} \label{eq:CCADer4}
+\end{gather}
+where we've used~\cref{eq:CCAConstraints}. Therefore we get that $\rho_{x}=\rho_{y}=\rho$. 
 
+Since we've assumed $\Sigma_{XX}, \Sigma_{YY}$ are (strictly) positive definite, they are invertible, and therefore from~\cref{eq:CCADer1} and~\cref{eq:CCADer2}, we get:
+\begin{equation}
+  a = \frac{\Sigma_{XX} ^{-1} \Sigma_{XY} b}{\rho} 
+\end{equation}
+Plugging this into~\cref{eq:CCADer2}, we get:
+\begin{align*}
+  &\frac{1}{\rho} \Sigma_{XY}^{T} \Sigma_{XX} ^{-1}  \Sigma_{XY} b = \rho \Sigma_{YY} b  \\
+  \Rightarrow \  & \Sigma_{YY} ^{-1} \Sigma_{XY}^{T} \Sigma_{XX} ^{-1}  \Sigma_{XY} b = \rho ^2 b  \\
+  \Rightarrow \ & Cb = \rho ^2 b \label{eq:CCAOptSolC}
+\end{align*}
 
-We solve using Lagrange Multipliers, defining:
-\[
-  M \stackrel{\text{ def }}{=}  \Sigma_{XX}^{-1/2} \Sigma_{XY} \Sigma_{YY}^{-1/2} \in \mathbb{R}^{n \times  m}  
-\]
+In an analogous way we get:
+\begin{equation*} \label{eq:CCAOptSolB}
+  Ba = \rho ^2 a  
+\end{equation*}
+Therefore we get that the optimal $\hat{a}, \hat{b}$ would be the largest eigenvector of $B$ and $C$, respectively. The reasoning is like in PCA. 
 
-
-
-
+Further, note that:
+\begin{align} \label{eq:CCAOptSolB}
+  & B \hat{a}  = \rho ^2 \hat{a}   \\
+   \Rightarrow \ & MM^{T} (\Sigma_{XX}^{1/2} \hat{a} ) = \rho ^2 (\Sigma_{XX}^{1/2} \hat{a}  ) 
+\end{align}
+Denote $\hat{u} = \Sigma_{XX}^{1/2} \hat{a}$. Then $\hat{u}$ is an eigenvector of $B$ with eigenvalue $\rho ^2$. Since we know that $MM^{T}$ and $B$ have the same eigenvalues, we know that $\hat{u}$ is the largest eigenvector of $MM^{T}$. Therefore, In order to compute $\hat{a}$, all we need to do is find largest eigenvector $MM^{T}$, i.e. $\hat{u}$, and then compute $\hat{a} = \Sigma_{XX}^{-1/2} \hat{u}$. 
+Similarly, if $\hat{v}$ is largest eigenvector of $M^{T}M$, then $\hat{b} = \Sigma_{YY}^{1/2} \hat{v}$.
 
 
 \end{document}
