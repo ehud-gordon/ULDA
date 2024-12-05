@@ -182,6 +182,18 @@ Concluding,
 
 \section*{Question 5}
 \subsection*{Question 5.1}
+The idea is to reduce the number of variables without sacrificing too much information. 
+Whereas PCA deals with random variables that come from a single set, CCA assumes the variables come from \textbf{two} sets. We select an \ul{uncorrelated} \ul{linear} combinations $a^{T}x$ and $b^{T}y$, which are pairwise highly correlated.
+
+
+We assume wlog that $E[x] = E[y] = 0$. Additionally, We assume both random vectors have no redundant features, i.e. no features that can be expressed as a linear combination of the others. This gives that $xx^{T}$ and $yy^{T}$ are (strictly) positive definite (and not \textit{semi}-positive definite). 
+
+
+Under these circumstance, note that   the correlation between $a^{T}x$ and $b^{T}y$ is:
+\[
+  \rho = \frac{E[(a^{T}x)(b^{T}y)^{T}]}{\sqrt{ \Var[a^{T}X] \cdot \Var[b^{T}X] } } = \frac{a^{T} E[x y^{T}}{b}
+\]
+
 
 \subsection*{Question 5.2: Comparing Statistical and Geometrical PCA}
 \ul{TL:DR} skip over Statistical POV and Geometric POV, I wrote them just to introduce notation. Go to \ul{Difference in Optimization}. 
