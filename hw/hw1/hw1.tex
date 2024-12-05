@@ -2,14 +2,40 @@
 \usepackage{preamble}
 \input{preamble}
 \graphicspath{ {images/} }
+% Define appearance for \section
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries} % Format for numbered sections
+  {\thesection.}              % Numbering format
+  {1em}                       % Space between number and title
+  {}
+
+% Define appearance for \section*
+\titleformat{name=\section,numberless}
+  {\normalfont\LARGE\bfseries} % Format for unnumbered sections
+  {}
+  {0pt}
+  {}
+
+% Similarly, define for \subsection and \subsection* if needed
+\titleformat{\subsection}
+  {\normalfont\Large\bfseries}
+  {\thesubsection.}
+  {1em}
+  {}
+
+\titleformat{name=\subsection,numberless}
+  {\normalfont\Large\bfseries}
+  {}
+  {0pt}
+  {}
 %%%%%%%%%%%%%%%% Document %%%%%%%%%%%%%%%%
 \begin{document}
 \begin{center}
   {\huge \underline{Unsupervised Learning and Data Analysis} \\[5pt] \ul{Homework 1}}
 \end{center}
 \section*{Question 1 - MLE Normal Distribution}
-Let $A$ be a matrix, let $x$ be a vector, and $|A|$ mean the determinant of a matrix.
-Let's denote
+Let $A$ be a matrix, let $x$ be a vector, and $|A|$ be the determinant of a matrix.
+Denote
 \begin{gather}
   \nabla_{x} Ax = A^{T} \label{eq:gradX} \\
   \nabla_{x} x^{T}A = A \label{eq:gradXT} \\
@@ -18,13 +44,15 @@ Let's denote
   \frac{\partial }{\partial A} \Tr [AB] = B^{T} \label{eq:gradTrProd} \\
   \Tr [A^{T} B] = (\operatorname{vec}A)^{T} \operatorname{vec}B
 \end{gather}
-Let $X_1, \ldots, X_{N} \sim \mathcal{N}(\mu, \Sigma)$ i.i.d, with $\mu \in \mathbb{R}^{d}, \Sigma \in \mathbb{R}^{d \times d}$.  \textbf{Assume} $\Sigma$ is positive definite. 
+Let $X_1, \ldots, X_{N} \sim \mathcal{N}(\mu, \Sigma)$ i.i.d, with $\mu \in \mathbb{R}^{d}, \Sigma \in \mathbb{R}^{d \times d}$.  
+
+Since we are told that $X$ has a $d$-dimensional normal distirbution, we have by definition that  $\Sigma$ is positive definite (not merely PSD), otherwise $\Sigma ^{-1}$ isn't defined. 
 
 The PDF of a $d$-multivariate normal random variable $X \sim \mathcal{N}(\mu, \Sigma)$ is:
 \[
   f(x ; \mu, \Sigma) = (2 \pi)^{-d/2} | \Sigma |^{-1/2} \exp \big( -\frac{1}{2} (x-\mu)^{T} \Sigma ^{-1}  (x-\mu) \big)
 \]
-The likelihood function $L(\mu, \Sigma, x_1, \ldots  x_d)$ of $N$ iid RV is the product of their PDFs:
+The likelihood function $L(\mu, \Sigma, x_1, \ldots  x_d)$ of $N$ iid random variables is the product of their PDFs:
 \[
   L = (2 \pi )^{-Nd/2} | \Sigma|^{-N/2} \exp \left( -\frac{1}{2} \sum_{j=1}^{N} (x_j-\mu)^{T} \Sigma ^{-1}  (x_j-\mu) \right) 
 \]
@@ -41,19 +69,20 @@ And therefore the log-likelihood is:
  &= -\frac{1}{2} \sum_{j=1}^{N} - \Sigma ^{-1} x_j - \Sigma ^{-1} x_j + 2 \Sigma ^{-1}  \mu \\
   &= \Sigma ^{-1}  \sum_{j=1}^{N} (x_j - \mu)
 \end{align*}
-where we've used properties~\cref{eq:gradX},~\cref{eq:gradXT} and~\cref{eq:gradxtAx}, and also the fact that $\Sigma = \Sigma ^{T}$. We set $\nabla_{\mu} \ell = 0$, and get:
+where we've used~\cref{eq:gradX},~\cref{eq:gradXT} and~\cref{eq:gradxtAx}, and also the fact that $\Sigma = \Sigma ^{T}$. We set $\nabla_{\mu} \ell = 0$, and get:
 \[
-  \sum_{j=1}^{N} (x_j - \mu) = 0
+  \sum_{j=1}^{N} (x_j - \mu) = \bm{0}
 \]
-where we've used the fact that $\Sigma$ is positive definite. Therefore we get:
+where we've used the fact that $\Sigma \succ 0$. Therefore we get:
 \[
   \hat{\mu}  = \frac{1}{N} \sum_{j=1}^{N}x_j
 \]
 
 
-\ul{Covariance}: We take the gradient wrt to $\Sigma ^{-1}$:
+\ul{Covariance}: We take the gradient of $\ell$ wrt to $\Sigma^{-1}$:
 \begin{align*}
-  \nabla_{ \Sigma ^{-1} } \ell &= \frac{N}{2} \nabla_{ \Sigma ^{-1}  } \ln | \Sigma ^{-1}  | - \frac{1}{2} \nabla_{\Sigma ^{-1} }  \sum_{j=1}^{N} \Tr \left[ (x_j - \mu)^{T} \Sigma ^{-1} (x_j - \mu) \right]  \\
+  \nabla_{ \Sigma ^{-1} } \ell &= \frac{N}{2} \nabla_{ \Sigma ^{-1}  } \ln | \Sigma ^{-1}  | - \frac{1}{2} \nabla_{\Sigma ^{-1} }  \sum_{j=1}^{N} (x_j - \mu)^{T} \Sigma ^{-1} (x_j - \mu)  \\
+  &= \frac{N}{2} \nabla_{ \Sigma ^{-1}  } \ln | \Sigma ^{-1}  | - \frac{1}{2} \nabla_{\Sigma ^{-1} }  \sum_{j=1}^{N} \Tr \left[ (x_j - \mu)^{T} \Sigma ^{-1} (x_j - \mu) \right]  \tag{Trace and vec}\\
   &= \frac{N}{2 } \Sigma ^{T} - \frac{1}{2}  \nabla_{ \Sigma ^{-1} }  \sum_{j=1}^{N} \Tr \left[ (x_j - \mu) (x_j - \mu)^{T} \Sigma ^{-1}  \right] \\ 
   &= \frac{N}{2 } \Sigma ^{T} - \frac{1}{2}  \nabla_{ \Sigma ^{-1} } \Tr \left[ \left( \sum_{j=1}^{N} (x_j-\mu) (x_j - \mu) ^{T} \right) \Sigma ^{-1}  \right]\\
   &= \frac{N}{2} \Sigma ^{T}  - \frac{1}{2 }\left( \sum_{j=1}^{N} (x_j - \mu) (x_j - \mu) ^{T}  \right) ^{T} 
@@ -70,7 +99,7 @@ we set to zero and transpose, and we get:
 
   \item 
 \begin{claim}
-(Courant-Fischer): Let $S \in \mathbb{R}^{m \times n}$ be a collection of $m$ samples $(s_1, \ldots, s_m)$, each $s_i \in \mathbb{R}^{n}$. 
+(Courant-Fischer Min-Max): Let $S \in \mathbb{R}^{m \times n}$ be a collection of $m$ samples $(s_1, \ldots, s_m)$, each $s_i \in \mathbb{R}^{n}$. 
   Assume the samples are centered, i.e. $\bm{1}^{T} S = \bm{0}^{T}$.  
 Let $C = S ^{T}S$, and $v_1$ be the largest eigenvalue of $C$. Then $v_1$ represents the direction of the largest variance of $S$. 
 \end{claim}
@@ -91,7 +120,7 @@ Let $C = S ^{T}S$, and $v_1$ be the largest eigenvalue of $C$. Then $v_1$ repres
 
     Therefore, the unit vector that will maximize $\text{Var}(Su)$ is: 
     \[
-      \argmax_{\lVert v \rVert ^2 =1} u^{T} C u
+      \argmax_{\lVert u \rVert ^2 =1} u^{T} C u
     \]
     
 
@@ -100,7 +129,9 @@ Let $C = S ^{T}S$, and $v_1$ be the largest eigenvalue of $C$. Then $v_1$ repres
       C = \sum_{i=1}^{n} \lambda_i v_i  v_i ^{T}
     \]
    since $C$ is PSD, we have that $\lambda_i \geq 0$ for all $i$.  
-    Let $u = \sum_{i=1}^{n} a_i v_i$ be a unit vector (such a representation exists and is unique because the eigenvectors form a basis). Then:
+  Let $u = \sum_{i=1}^{n} a_i v_i$ be a unit vector. 
+  Such a representation exists and is unique because the eigenvectors form a basis. 
+  Then:
 \begin{align*}
       u ^{T} C u &= u ^{T} \big( C \sum_{i=1}^{n} a_i v_i \big) = u ^{T} \big( \sum_{j=1}^{n} \lambda_j v_j v_j ^{T} (\sum_{i=1}^{n} a_i v_i) \big)  \\
       &= u ^{T} \big( \sum_{j=1}^{n}  \lambda_j v_j \langle v_j, \sum_{i=1}^{n} a_i v_i \rangle \big) 
