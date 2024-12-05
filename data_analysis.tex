@@ -618,7 +618,7 @@ We note that
   B = \Sigma_{XX}^{-1/2} MM^{T} \Sigma_{XX}^{1/2} \label{eq:CCABasMMT} \\
   C = \Sigma_{YY}^{-1/2} M^{T} M \Sigma_{YY}^{1/2} \label{eq:CCACasMTM}
 \end{gather}
-i.e. $B$ is \textit{similar} to $MM^{T}$ and hence they have the same eigenvalues. Likewise, $C$ is similar to $M^{T}M$, and hence $MM^{T}, M^{T}M,B,C$ all have the same eigenvalues $\lambda_1 \geq \ldots \lambda_{r} > 0$, where $r$ is the rank of $\Sigma_{XY}$.  
+i.e. $B$ is \textit{similar} to $MM^{T}$ and hence they have the same eigenvalues. Likewise, $C$ is similar to $M^{T}M$, and hence $MM^{T}, M^{T}M,B,C$ all have the same eigenvalues $\lambda_1 > \ldots > \lambda_{r} > 0$, where $r$ is the rank of $\Sigma_{XY}$.  
 
 
 We Solve~\cref{eq:CCAObjective2} using Lagrange Multipliers. Define:
@@ -659,8 +659,10 @@ Further, note that:
   & B \hat{a}  = \rho ^2 \hat{a}   \\
    \Rightarrow \ & MM^{T} (\Sigma_{XX}^{1/2} \hat{a} ) = \rho ^2 (\Sigma_{XX}^{1/2} \hat{a}  ) 
 \end{align}
-Denote $\hat{u} = \Sigma_{XX}^{1/2} \hat{a}$. Then $\hat{u}$ is an eigenvector of $B$ with eigenvalue $\rho ^2$. Since we know that $MM^{T}$ and $B$ have the same eigenvalues, we know that $\hat{u}$ is the largest eigenvector of $MM^{T}$. Therefore, In order to compute $\hat{a}$, all we need to do is find largest eigenvector $MM^{T}$, i.e. $\hat{u}$, and then compute $\hat{a} = \Sigma_{XX}^{-1/2} \hat{u}$. 
-Similarly, if $\hat{v}$ is largest eigenvector of $M^{T}M$, then $\hat{b} = \Sigma_{YY}^{1/2} \hat{v}$.
+Denote $\hat{u} = \Sigma_{XX}^{1/2} \hat{a}$. Then $\hat{u}$ is an eigenvector of $B$ with eigenvalue $\rho ^2$. Since we've shown that $MM^{T}$ and $B$ have the same eigenvalues, we get that $\hat{u}$ is the largest eigenvector of $MM^{T}$. Therefore, In order to compute $\hat{a}$, all we need to do is find largest eigenvector $MM^{T}$, i.e. $\hat{u}$, and then compute $\hat{a} = \Sigma_{XX}^{-1/2} \hat{u}$. 
+Similarly, if $\hat{v}$ is largest eigenvector of $M^{T}M$, then $\hat{b} = \Sigma_{YY}^{-1/2} \hat{v}$. 
+
+Therefore, we can obtain the canonical directions using the eigenvalues of $MM^{T}, M^{T}M$. 
 
 
 \end{document}
