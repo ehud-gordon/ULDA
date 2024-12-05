@@ -20,6 +20,20 @@
 \begin{theorem}[Single Constraint Lagrange Multiplier]
 Let $f: \mathbb{R}^{n} \to \mathbb{R}$ be a function we wish to minimize under the constraint $g =0$, with $g: \mathbb{R}^{n} \to \mathbb{R}$.  
 \begin{figure}[H] \centering \includegraphics[height=0.2\textheight,width=0.9\textwidth,keepaspectratio]{lagrangianSingleConstraint} \caption{Lagrangian single constraint} \label{fig:lagrangianSingleConstraint} \end{figure}
+At a critical point, we would have:
+\[
+  \bm{\nabla}f = \lambda \bm{\nabla}g
+\]
+for some $\lambda \in \mathbb{R}$. 
+
+Equivalently, we can define the Lagrangian:
+\[
+  \mathcal{L}(x,\lambda) = f(x) + \lambda g(x)
+\]
+and then look for stationary points, i.e. points that satisfy:
+\[
+  \frac{\partial \mathcal{L}}{\partial x} = 0 \quad and \quad \frac{\partial \mathcal{L}}{\partial \lambda} = 0  
+\]
 
 \end{theorem}
 \begin{theorem}[Multiple Constraints Lagrange Multipliers]
@@ -38,6 +52,18 @@ Specifically, this means that $\bm{\nabla}f \in A^{\perp} = S$. Thus, there are 
   \bm{\nabla}f(\bm{x}) = \sum_{i=1}^{2} \lambda_i \bm{\nabla}g_i(\bm{x})
 \]
 
+More generally, for $f: \mathbb{R}^{n} \to \mathbb{R}$ with $m$ constraints $g_i: \mathbb{R}^{n} \to \mathbb{R}$ we look for $\lambda_1, \ldots  \lambda_m$ s.t.:
+\[
+  \bm{\nabla}f(\bm{x}) = \sum_{k=1}^{m} \lambda_k \bm{\nabla}g_{k} (\bm{x}) \quad \text{and} \quad g_1(\bm{x}) = \ldots  = g_{m}(\bm{x}) = 0 
+\]
+equivalently, we define:
+\[
+  \mathcal{L}(\bm{x}, \lambda_1, \ldots \lambda_m) = f(\bm{x}) - \sum_{k=1}^{m} \lambda_k g_k(\bm{x})
+\]
+and solve:
+\[
+  \bm{\nabla}_{\bm{x}, \bm{\lambda}} \mathcal{L}(\bm{x}, \bm{\lambda}) = 0 \iff \begin{cases} \bm{\nabla}_{\bm{x}} f(\bm{x}) - \displaystyle\sum_{k=1}^{m} \lambda_k \bm{\nabla}g_k(\bm{x}) = 0 \\ g_1(\bm{x}) = \ldots  = g_{m}(\bm{x}) = 0  \end{cases} 
+\]
 \end{theorem}
 
 
@@ -551,22 +577,36 @@ Whereas PCA deals with random variables that come from a single set, CCA assumes
 
 We assume wlog that $E[X] = E[Y] = 0$ 
 
-\ul{Objective}: Given multivariate random vectors $X \in \mathbb{R}^{n}, Y \in \mathbb{R}^{m}$, find \textit{linear} mappings, $a \in \mathbb{R}^{n}, b \in \mathbb{R}^{m}$, also known as the \textbf{canonical directions}, such that for the random variables $U = a^{T}X$ and $V = b^{T}Y$, we have:
-\begin{align*}
+\ul{Objective}: Given multivariate random vectors $X \in \mathbb{R}^{n}, Y \in \mathbb{R}^{m}$, find \textit{linear} mappings, $a \in \mathbb{R}^{n}, b \in \mathbb{R}^{m}$, also known as the (first) \textbf{canonical directions}, such that for the random variables $U = a^{T}X$ and $V = b^{T}Y$, we have:
+\begin{equation} \label{CCAObjective1}
+\begin{aligned}
   & \max_{a,b} \big[ (a^{T} X) (b^{T} Y) \big] \\
-  & \operatorname*{\text{subject to}} \quad  E \left[ (a^{T}X)^2 \right] = 1 \, \  E \left[ (b^{T}Y)^2 \right] = 1 
-\end{align*}
-Denoting $\Sigma_{XX} :=E[X X^{T}]$ and $\Sigma_{yy} = E[Y Y^{T}]$ and $\Sigma_{XY} = E[X Y^{T}], \Sigma_{YX} = E[Y X^{T}]$ 
+  & \operatorname*{\text{subject to}} \quad  E \left[ (a^{T}X)^2 \right] = 1 \,, \  E \left[ (b^{T}Y)^2 \right] = 1 
+ \end{aligned}
+\end{equation}
+
+Denoting $\Sigma_{XX} :=E[X X^{T}]$ and $\Sigma_{YY} = E[Y Y^{T}]$ and $\Sigma_{XY} = E[X Y^{T}], \Sigma_{YX} = E[Y X^{T}]$ 
 our objective becomes
-\[
-  \max_{a,b} a^{T} \Sigma_{XY} b \quad \text{ s.t. } a^{T} \Sigma_{XX}a = 1, b^{T} \Sigma_{YY} b = 1
-\]
+\begin{equation} \label{eq:CCAObjective2}
+\max_{a,b} a^{T} \Sigma_{XY} b \quad \text{ s.t. } a^{T} \Sigma_{XX}a = 1, b^{T} \Sigma_{YY} b = 1
+\end{equation}
 
 Note that:
 \[
   E[a^{T} X] = a^{T} E[X] = 0
 \]
-and similarly $E[b^{T} Y] = 0$
+and similarly $E[b^{T} Y] = 0$. 
+
+
+We Solve~\cref{eq:CCAObjective2} using Lagrange Multipliers. Define:
+\[
+  L(\rho_{x}, \rho_{y}, a,b) := a^{T} \Sigma_{XY} b - \frac{\rho_{x}}{2} ( a^{T} \Sigma_{XX} a)  - \frac{\rho_{y}}{2} (b^{T} \Sigma_{YY} b)
+\]
+Differentiating, we get:
+\begin{gather*}
+  \frac{\partial L}{\partial a} = (\Sigma_{XY} b)^{T}
+\end{gather*}
+
 
 We solve using Lagrange Multipliers, defining:
 \[
