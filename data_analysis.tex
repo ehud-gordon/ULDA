@@ -444,19 +444,19 @@ Define "conditional probability":
   p_{j | i } := \frac{\exp{(- \lVert  x_i -x_j \rVert ^2 / 2 \sigma ^2 }) }{\sum_{k \neq  i } \exp (- \lVert x_i-x_k \rVert ^2 / 2 \sigma ^2 )}
 \]
 This is the Heat-Kernel Affinity. We define $p_{i|i} := 0$ (convention). 
-  Let $E$ be the symmetric matrix defined by $E_{ij}=e^{- \lVert x_i -x_j \rVert ^2}.$ This gives a non-symmetric matrix $P_{ji} = p_{j|i}$ which is $E_{ji}$ divided by entire $
-  i$-th row of$E$. Therefore the columns sum to$1$, but the rows don't. 
+  Let $E$ be the symmetric matrix defined by $E_{ij}=e^{- \lVert x_i -x_j \rVert ^2}.$ Define the non-symmetric matrix $P_{ji} = p_{j|i}$ which is $E_{ji}$ divided by entire $
+  i$-th column of$E$. Therefore the columns sum to$1$, but the rows don't. 
 
 \begin{itemize}
 \item \ul{Probability Measure} This is a probability measure, since $\sum_{j} p_{j|i} = 1$
-  \item \ul{Non-Symmetric} $p_{j|i} \neq p_{i|j}$ . Imagine three points $a < b < c$ on a line, with b in the middle. Then $p_{b|a} > p_{a | b}$, since $b$ has other close neighbors (more popular) than $a$.  
+  \item \ul{Non-Symmetric} $p_{j|i} \neq p_{i|j}$. Example: Imagine three points $a < b < c$ on a line, with b in the middle. Then $p_{b|a} > p_{a | b}$, since $b$ has other close neighbors (more popular) than $a$.  
   \item  \ul{Distance} $p_{i|j}$ transforms the euclidean distance $\lVert x_i - x_j \rVert$ into a probability measure. Low distance = High probability (of being neighbors). This allows us to turn the problem of finding similar embeddings into finding similar probability distributions $P$ and $Q$.
 \end{itemize}
 \end{definition}
  
 
 
-\begin{theorem}[SNE Embedding] We wish to find low dimensional representation $Y = \left\{ y_1, \ldots  y_n \right\} \in \mathbb{R}^{d}$ with $d << D$, where we measure affinity $q_{i|j}$ by:
+\begin{theorem}[SNE Embedding] We wish to find low dimensional representation $Y = \left\{ y_1, \ldots  y_n \right\} \in \mathbb{R}^{d}$ with $d << D$, where we measure affinity $q_{j|i}$ by:
 \[
   q_{j | i } := \frac{\exp{(- \lVert  y_i -y_j \rVert ^2 }) }{\sum_{k \neq  i } \exp (- \lVert y_i-y_k \rVert ^2  )}
 \]
@@ -490,6 +490,7 @@ We look for:
 \begin{itemize}
 
   \item \ul{Goal}: Goal of SNE is to minimize mismatches between $p_{j|i}$ and $q_{j|i}$. 
+ SNE minimizes the sum of KL divergences over all data points, using a gradient descent method. We denote the cost function $C$:
   \item \ul{Non-Symmetry}: For \textbf{close} points ($p_{j|i}$ high) there is \textbf{high} cost for mapping them \textbf{far} (i.e. small $q_{j|i}$). However, for \textbf{far} points ($p_{j|i}$ low), there is \textbf{small} cost for mapping them close (i.e. assigning high $q_{j|i}$). This leads to asymmetry, where SNE preserves \textbf{local} structure, but not \textbf{global} structure. 
 \end{itemize}
 \end{definition}
@@ -649,7 +650,7 @@ Plugging this into~\cref{eq:CCADer2}, we get:
 \end{align*}
 
 In an analogous way we get:
-\begin{equation*} \label{eq:CCAOptSolB}
+\begin{equation*} 
   Ba = \rho ^2 a  
 \end{equation*}
 Therefore we get that the optimal $\hat{a}, \hat{b}$ would be the largest eigenvector of $B$ and $C$, respectively. The reasoning is like in PCA. 
