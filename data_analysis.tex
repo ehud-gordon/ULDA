@@ -421,7 +421,7 @@ This follows from the RHS of~\cref{eq:SVDDecomp}.
 
 \begin{definition}[KL Divergence] Let $p,q$ be PMF over $\mathcal{X}$. Then:
 \begin{align*}
-  D(p||q) := \sum_{x in \mathcal{X} } p(x) \log \frac{p(x)}{q(x)}
+  D(p||q) := \sum_{x \in \mathcal{X} } p(x) \log \frac{p(x)}{q(x)}
 \end{align*}
 \end{definition}
 
@@ -435,7 +435,7 @@ where:
 \]
 \end{definition}
 
-Let $X = \left\{  x_1, \ldots, x_n \right\} \in \mathbb{R}^{D}$
+Let $X = \left\{  x_1, \ldots, x_n \right\}$ be $n$ samples, with $x_i \in \mathbb{R}^{D}$, 
 and a distance measure $\lVert x_i - x_k \rVert$. 
 
 \begin{definition}["Conditional Probability"] 
@@ -479,7 +479,7 @@ We wish that $y_i$ is similar to $x_i$.
 
 
 \begin{definition}[SNE Cost Function] 
-  Define the Cost Function, that minimizing it  aims to maintain neighborhood similarity:
+Define the Cost Function, that minimizing it aims to maintain neighborhood similarity:
 \[
  C(Y) = C( \left\{ y_i \right\}) = \sum_{i} KL(P_i | Q_i) = \sum_{i} \sum_{j \neq i} p_{j | i} \log \frac{p_{j|i}}{q_{j|i}}
 \] 
@@ -507,9 +507,9 @@ We look for:
 
   \item We initialize  $y$ by sampling map points randomly from an isotropic Gaussian with small variance that is centered around the origin. 
   \item A relatively large momentum is added to gradient to avoid poor local minima. Alternatively, the current gradient is added to an exponentially decaying sum of previous gradients.
-  \[
+\[
     \mathcal{Y}^{(t)} = \mathcal{Y}^{(t-1)} + \eta \frac{\partial C}{\partial y} + \alpha(t) (\mathcal{Y}^{(t-1)} + \mathcal{Y}^{(t-2)} ) 
-  \]
+\]
   where $\alpha(t)$ is the momentum at iteration $t$ and $\eta$ is the learning rate.  
 
 \end{itemize}
@@ -530,7 +530,9 @@ We look for:
 \end{remark}
 
 \subsection{t-SNE}
-\ul{Crowding Problem} Mapping far $x_i$ points to nearby (crowded) $y_i$  points in the embedding dim is both problematic, and makes gradient descent unstable. Specifically, think of $x_i, x_j$ being two outliers who are near each other. Then $p_{j|i}$ (and $p_{i|j}$) will be very small, and hence the cost function won't take them into consideration. 
+\ul{Crowding Problem} Consider a fixed point $x_i \in \mathbb{R}^{D}$. The set of neighbors $\left\{ x_j \, | \,  p_{j|i} \right\} \text{ is large}$ may be "evenly spread" across the entire $D$-dimensional volume around $x_i$. In other words, $x_i$ has many neighbors that are moderately close.  Therefore, trying to project this relationship faithfully into a $d << D$-dimensional volume, preserving distances, is impossible - distortions and overlap are necessary. There is simply not enough "room" in $\mathbb{R}^{d}$, we have "overcrowding". Therefore we must either push points very close, or spread them out. 
+
+If we use Gaussian distribution for $q_{ij}$, this will lead to highly-distorted representation. Instead, tSNE uses a heavy-tailed distribution. The slower decay allows t-SNE to spread out points in the low-dimensional space without completely sacrificing neighborhood probabilities.  
 
 tSNE solves this by using:
 \begin{enumerate}
@@ -546,7 +548,7 @@ tSNE solves this by using:
   p_{ij} := \frac{\exp(- \lVert x_i -x_j \rVert^2 / 2 \sigma ^2) } {\sum_{k} \sum_{\ell \neq k } \exp(- \lVert x_k - x_{\ell} \rVert ^2 / 2 \sigma ^2 ) }
 \]
 
-Recall that previously, $P_{ji}=p_{j|i}$ was given as $E_{ji}$ divided by the $i$-th row of $E$. Now instead, $P_{ji}$ is defined to be $E_{ji}$ divided by the \textit{entire} matrix $E$ (which has a zero main diagonal), and therefore $P_{ji}=P_{ij}$. 
+Recall that previously, $P_{ji}=p_{j|i}$ was given as $E_{ji}$ divided by the $i$-th column of $E$. Now instead, $P_{ji}$ is defined to be $E_{ji}$ divided by the \textit{entire} matrix $E$ (which has a zero main diagonal), and therefore $P_{ji}=P_{ij}$. 
 In the \textit{low-dimensional} map $q_{i|j}$ as  the denominator ($Z_i$) by pairwise similarities:
 \[
   q_{ij} := \frac{e^{- \lVert y_i -y_j \rVert^2 } } {\sum_{k} \sum_{\ell \neq k } e^{- \lVert y_k - y_{\ell} \rVert ^2}   } 
