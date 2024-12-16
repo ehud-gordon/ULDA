@@ -6,6 +6,7 @@
 \begin{document}
 \begin{center}
 {\huge \underline{Variational Auto Encoders}}
+\end{center}
 \section{Introduction}
 
 \begin{definition}[Modeling] Modeling is unveiling the underlying ruling processes, by posing hypotheses and predictions, based on observations. For instance, physicists model how fluids flow, and biologists the  structure of organisms. 
@@ -40,6 +41,81 @@ A common example is image classification, where $\bm{x}$ is the image, and $\bm{
 \end{remark}
 
 \subsection{Learning in Fully Observed Models with Neural Nets}
+We work with \textit{directed} PGMs, where all variables are topologically organized into a directed acyclic graph, and the joint distribution over the variables of such models factorizes as a product of prior and conditional probabilities:
+\[
+  p_{\theta}(\bm{x}_1, \ldots  \bm{x}_m) = \sum_{j=1}^{m} p_{\theta}(\bm{x}_j | Pa(x_j))    
+\]
+where $Pa(\bm{x}_j)$ is the set of parent variables of node $j$ in the directed graph. 
+
+If all variables in the directed model are observed in the data, then we can compute and differentiate the log-probability of the data under the model, leading to a relatively straightforward optimization. 
+
+\ul{Dataset}: We collect a dataset $\mathcal{D}$ consisting of $N$ datapoints:
+\[
+  \mathcal{D} = \left\{ \bm{x}^{(1)}, \ldots, \bm{x}^{(N)} \right\} 
+\]
+The datapoints are assumed to be independent samples from an unchanging underlying distribution, i.e. i.i.d. Then the probability of the datapoints given the parameters factorizes as a product of individual datapoint probabilities:
+\[ \begin{array}{@{} R{0.3\textwidth}  C{0.6\textwidth} P{0.1\textwidth} @{}} 
+& \[
+ \log p_{\theta}(\mathcal{D})  = \displaystyle \sum_{\bm{x} \in \mathcal{D}} \log  p_{\theta}(\bm{x}) \label{eq:log_likelihood} \tag{Maximum Likelihood}
+\]  &   
+\end{array} \]
+
+A common criterion for probabilistic models is maximum log-likelihood (MLL). We attempt to find the parameters $\theta$ that maximize the above sum, or equivalently, the average, of the log-probabilities assigned to the data by the model. Since our model is limited by its expressiveness, and our data is noisy, this can not be trivially solved.  
+
+Using stochastic gradient descent, we draw a minibatch $\mathcal{M}$ of the data, and since:
+\[
+  \nabla_{\theta} \log  p_{\theta}(\mathcal{D})  \simeq \nabla_{\theta} \log  p_{\theta} (\mathcal{M})  = \sum_{\bm{x} \in \mathcal{M}} \nabla_{\theta}  \log  p_{\theta}(\bm{x})
+\]
+where $\simeq$ indicates an unbiased estimator, we can use $\displaystyle \sum_{\bm{x} \in \mathcal{M}} \nabla_{\theta} \log  p_{\theta}(\bm{x})$ to iteratively update $\theta$ and  hill-climb to a local optimum of the~\ref{eq:log_likelihood}.  
+
+\subsection{Learning and Inference in Deep Latent Variable Models}
+\begin{definition}[Latent Variables]  Variables which are part of the model, but which we do not observe.
+
+For an observed variable $\bm{x}$ and an unobserved variable $\bm{z}$, the joint distribution is denoted $p_{\theta}(\bm{x}, \bm{z})$ over both variables. The marginal distribution over the observed variables $p_{\theta}(\bm{x})$ is given by:
+  \begin{equation} \label{eq:marginalLikelihood}
+  p_{\theta}(\bm{x}) = \int p_{\theta}(\bm{x}, \bm{z}) \d{\bm{z}}
+\end{equation}
+This is also called the \textit{evidence}.
+\end{definition}
+
+\begin{definition}[Deep Latent Variable Model (DLVM)]  latent variable model $p_{\theta}(\bm{x}, \bm{z})$ whose distributions are parameterized by neural nets. Then, even when each factor (prior or conditional distribution) in the directed model is relatively simple (such as a conditional Gaussian), the marginal distribution $p_{\theta}(\bm{x})$ can be very complex. This expressivity makes DLVM attractive for approximating complicated underlying distributions $p ^{\star}(\bm{x})$. 
+\end{definition}
+
+\begin{example}  A simple DLVM is:
+\[
+  p_{\theta}(\bm{x}, \bm{z}) = p_{\theta}(\bm{z}) p_{\theta}(\bm{x} | \bm{z}) 
+\]
+we call $p_{\theta}(\bm{z})$ the \textit{prior distribution} over $\bm{z}$. 
+
+  For example, assume, for binary data $\bm{x}$ (such as 0-1 MNIST images), a spherical Gaussian latent space, and a factorized Bernoulli observation model. Then:
+\begin{gather*}
+  p (\bm{z}) = \mathcal{N}( \bm{z} ; 0, I) \\
+  \bm{p} = \mathrm{DecoderNeuralNet}_{\theta} (\bm{z}) \\
+  \log p( \bm{x} | \bm{z}) = \sum_{j=1}^{D} \log  p (x_j | \bm{z}) = \sum_{j=1}^{D} \log \mathrm{Bernoulli}( x_{j} ; p_{j} )
+\end{gather*}
+where $D$ is the dimensionality of $\bm{x}$. 
+\end{example}
+
+\begin{remark} As $\bm{z}$ is not observed, computing~\cref{eq:marginalLikelihood} is intractable, and hence we cannot directly optimize it. 
+
+  For a Fully observed model, like $p_{\theta}(\bm{x}) \sim \mathcal{N}( \mu, \sigma ^2)$, we can easily compute $\log p_{\theta}(\bm{x})$, and optimize $\theta$ using the gradients of~\ref{eq:log_likelihood}. 
+
+For latent variable models, we have:
+\[
+  p_{\theta}(\bm{x}) = \int p_{\theta}(\bm{x}, \bm{z}) \d{\bm{z}}
+\]
+The integral over $\bm{z}$ often lacks a closed-form solution, due to the complexity of taking its gradient,  and the dimensionality of $\bm{z}$. 
+
+  Note - we often do know $p_{\theta}(\bm{x}, \bm{z})$, the joint distribution, since we have $p_{\theta}(\bm{x}, \bm{z}) =  p_{\theta}(\bm{x} | z) p_{\theta}(\bm{z})$, and we often assume $p_{\theta}(\bm{z})$, and $p_{\theta}(\bm{x} | z)$, the \textit{likelihood} 
+
+The intractability of $p_{\theta}(\bm{x})$ is related to the intractability of the \textit{posterior} distribution $p_{\theta}(\bm{z} | \bm{x})$, via the identity:
+\[
+  p_{\theta}(\bm{z} | \bm{x}) = \frac{p_{\theta}(\bm{x}, \bm{z})}{ p_{\theta}(\bm{x})}
+\]
+  since $p_{\theta}(\bm{x}, \bm{z})$ is tractable to compute. We approximate $p_{\theta}(\bm{z} | \bm{x})$ using variational inference, by a similar distribution $q \theta(\bm{z} | \bm{x})$, called the \textbf{variational distribution}. 
+\end{remark}
+
+\section{Variational Auto Encoders}
 
 
 \end{document}
