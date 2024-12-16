@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{preamble}
+\input{preamble}
+\graphicspath{ {images/} }
+%%%%%%%%%%%%%%%% Document %%%%%%%%%%%%%%%%
+\begin{document}
+\begin{center}
+{\huge \underline{Variational Auto Encoders}}
+\section{Introduction}
+
+\begin{definition}[Modeling] Modeling is unveiling the underlying ruling processes, by posing hypotheses and predictions, based on observations. For instance, physicists model how fluids flow, and biologists the  structure of organisms. 
+
+Modeling often involves representation, where we describe a phenomena using specific qualities and quantities related to the process we are interested in. We describe an object by its shape, color, position, volume, etc. 
+When looking at data - a large collection of samples - in some cases, it is reasonable to believe that those representations follow some distributions. For example, human height clearly follow some probability distribution. In such cases, we can think of the samples as being "generated" from those distributions. When such a hypothesis is true, we can generate new samples in the population, provided we estimated its probabilities. 
+\end{definition}
+
+\begin{remark} A complete probabilistic model captures both the distributions  of its components and the relations and dependencies between them. Usually linear relations, given by covariances, are used. 
+\end{remark}
+
+\begin{definition}[Probabilistic Model]  Assume the observed variable $\bm{x}$ is a random sample from an unknown underlying process, whose true probability distribution is $p^{\ast}(\bm{x})$. We approximate this underlying process with a chosen model $p_{\theta}(\bm{x})$, with parameters $\bm{\theta}$:
+\[
+  \bm{x} \sim p_{\theta}(\bm{x}) 
+\]
+Learning is the process of searching for a value of the parameters $\theta$. such that:
+\[
+  p_{\theta}(\bm{x}) \approx p ^{\star}(\bm{x}) 
+\]
+\end{definition}
+
+\begin{definition}[Conditional Models] Often, we are not interested in learning an unconditional model $p_{\theta}(\bm{x})$, but a conditional model $p_{\theta}(\bm{y} | \bm{x})$, that approximates the underlying conditional distribution $p ^{\ast}(\bm{y} | \bm{x})$: A distribution over the values of variable $\bm{y}$, conditioned on the value of an observed variable $\bm{x}$. $\bm{x}$ is often called the \textit{input} of the model. 
+
+A common example is image classification, where $\bm{x}$ is the image, and $\bm{y}$ is the label, and $p_{\theta}(\bm{y}|\bm{x})$ is chosen to be the categorical distribution, whose parameters are computed from $\bm{x}$. 
+\end{definition}
+
+\begin{remark} We can use neural networks to parameterize a distribution. For example for the categorical distribution $\mathrm{Categorical}(y ; \bm{p})$ over a class label $y$, we have: 
+\begin{gather*}
+  \bm{p} = \mathrm{NeuralNet}(\bm{x}) \\
+  p_{\theta}(y | \bm{x}) = \mathrm{Categorical}(y ; \bm{p})
+\end{gather*}
+\end{remark}
+
+\subsection{Learning in Fully Observed Models with Neural Nets}
+
+
+\end{document}
+
