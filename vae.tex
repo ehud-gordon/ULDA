@@ -8,21 +8,38 @@
 {\huge \underline{Variational Auto Encoders}}
 \end{center}
 \section{Introduction}
+\begin{definition}[Statistical Inference] Determining properties of the underlying probability distribution based on observed data. This could include estimating parameters, latent variables, or making predictions. In Bayesian inference, the primary goal is to compute the posterior $p(z|x)$:
 
+\[
+  p(z|x) = \frac{p(x,z)}{p(x)} = \frac{p(x|z) p(z)}{\int_{\mathcal{Z}} p(x,z) \d{z} }
+\]
+  Since the marginal likelihood $p(x)$ is intractable, we instead approximate the posterior $p(z|x)$ with a simpler, tractable distribution $q(z| \lambda)$, and we wish to minimize the KL divergence $KL \Big( q(z | \lambda) \, || \, p(z | x) \Big)$, or equivalently maximize the Evidence Lower Bound (ELBO):
+
+
+\end{definition}
+\begin{definition}[Density Estimation] Approximating PDF $p(x)$ of a random variable $X$ based on observed data $\left\{ x_1, \ldots, x_n \right\}$ drawn i.i.d from the underlying distribution. Can be either parametric, e.g.
+\[
+  p(x | \theta) \sim  \mathcal{N}( \mu_x, \sigma_x)
+\]
+or nonparametric density estimation, for example Kernel Density Estimation:
+\[
+  p(x) = \frac{1}{n h^{d}} \sum_{i=1}^{n} K \left( \frac{x-x_i}{h} \right) 
+\]
+\end{definition}
 \begin{definition}[Modeling] Modeling is unveiling the underlying ruling processes, by posing hypotheses and predictions, based on observations. For instance, physicists model how fluids flow, and biologists the  structure of organisms. 
 
 Modeling often involves representation, where we describe a phenomena using specific qualities and quantities related to the process we are interested in. We describe an object by its shape, color, position, volume, etc. 
-When looking at data - a large collection of samples - in some cases, it is reasonable to believe that those representations follow some distributions. For example, human height clearly follow some probability distribution. In such cases, we can think of the samples as being "generated" from those distributions. When such a hypothesis is true, we can generate new samples in the population, provided we estimated its probabilities. 
+When looking at data - a large collection of samples - in some cases, it is reasonable to believe that those representations follow some distributions. For example, human height clearly follow some probability distribution. In such cases, we can think of the samples as being "generated" from those distributions. When such a hypothesis is true, we can generate new samples in the population, provided we estimated its probabilities. Alternatively, we may say that we have uncertainty about those variables, and we specify the degree and nature of this uncertainty  in terms of probability distributions.  
 \end{definition}
 
-\begin{remark} A complete probabilistic model captures both the distributions  of its components and the relations and dependencies between them. Usually linear relations, given by covariances, are used. 
+\begin{remark} A complete probabilistic model captures both the \ul{distributions} of its components and the \ul{relations/dependencies} between them. Usually the linear relations, given by the covariances.
 \end{remark}
 
-\begin{definition}[Probabilistic Model]  Assume the observed variable $\bm{x}$ is a random sample from an unknown underlying process, whose true probability distribution is $p^{\ast}(\bm{x})$. We approximate this underlying process with a chosen model $p_{\theta}(\bm{x})$, with parameters $\bm{\theta}$:
+\begin{definition}[Probabilistic Model] Assume the observed variables $\bm{x}$ are a random sample from an unknown underlying process, whose true probability distribution is $p^{\ast}(\bm{x})$. We approximate this underlying process with a chosen probabilistic model $p_{\theta}(\bm{x})$, with parameters $\bm{\theta}$:
 \[
   \bm{x} \sim p_{\theta}(\bm{x}) 
 \]
-Learning is the process of searching for a value of the parameters $\theta$. such that:
+  Learning is the process of searching for a value of the parameters $\theta$, such that the probability function given by the mode $p_{\theta}(\bm{x})$, approximates the true distribution of the data, denoted by $p^{^{\ast}}(\bm{x})$, such that for any observed $\bm{x}$:
 \[
   p_{\theta}(\bm{x}) \approx p ^{\star}(\bm{x}) 
 \]
@@ -40,12 +57,20 @@ A common example is image classification, where $\bm{x}$ is the image, and $\bm{
 \end{gather*}
 \end{remark}
 
-\subsection{Learning in Fully Observed Models with Neural Nets}
-We work with \textit{directed} PGMs, where all variables are topologically organized into a directed acyclic graph, and the joint distribution over the variables of such models factorizes as a product of prior and conditional probabilities:
+\subsection{Directed PGMs and NNs}
+We work with \textit{directed} PGMs, where all variables are organized into a directed acyclic graph, and the joint distribution over the variables factorizes as a product of prior and conditional probabilities:
 \[
-  p_{\theta}(\bm{x}_1, \ldots  \bm{x}_m) = \sum_{j=1}^{m} p_{\theta}(\bm{x}_j | Pa(x_j))    
+  p_{\theta}(\bm{x}_1, \ldots  \bm{x}_m) = \sum_{j=1}^{m} p_{\theta}(\bm{x}_j | Pa(\bm{x}_j))    
 \]
 where $Pa(\bm{x}_j)$ is the set of parent variables of node $j$ in the directed graph. 
+
+Traditionally, each conditional probability distribution $p_{\theta}(\bm{x}_j | Pa(\bm{x}_j))$ is parameterized by a lookup table or a linear model. A more flexible way is to parametrize such conditional distributions using a neural network. In this case, the NN takes as input the parents of a variable, and produce the distributional parameters $\bm{\eta}$ over that variable:
+\begin{gather*}
+  \bm{\eta} = \mathrm{NeuralNet}(Pa(\bm{x})) \\
+  p_{\theta}(\bm{x} | Pa(\bm{x})) = p_{\theta}(\bm{x} | \bm{\eta}) 
+\end{gather*}
+for example, in VAE, when learning $p_{\theta}(\bm{x} | \bm{z})$, note that  $Pa(\bm{x}) = \bm{z}$, and the recognition model learn the distributional parameters $\bm{\eta}  = (\mu, \sigma)$  to parametrize $p_{\theta}(\bm{x} | \bm{\eta})$
+\subsection{Learning in Fully Observed Models with Neural Nets}
 
 If all variables in the directed model are observed in the data, then we can compute and differentiate the log-probability of the data under the model, leading to a relatively straightforward optimization. 
 
@@ -116,7 +141,8 @@ The intractability of $p_{\theta}(\bm{x})$ is related to the intractability of t
 \end{remark}
 
 \section{Variational Auto Encoders}
-
+\begin{definition}[VAE] The VAE can be viewed  as two coupled, but independently parameterized models: The encoder or the recognition model,and the generation model (aka decoder). The recognition model provides (an approximation to) the posterior for latent variables conditioned on observed data $p_{\theta}(z|x)$. 
+\end{definition}
 
 \end{document}
 
