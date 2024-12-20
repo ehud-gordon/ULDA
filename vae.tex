@@ -141,6 +141,59 @@ The intractability of $p_{\theta}(\bm{x})$ is related to the intractability of t
 \end{remark}
 
 \section{Variational Auto Encoders}
+\begin{remark}[Motivation] Suppose we have observed data \(\mathbf{x}\), for instance, pixels of dog images. These data points are drawn from some true but unknown distribution \(p^{\ast}(\mathbf{x})\). Our goal is to approximate $p ^{\ast}(\bm{x})$ using a parameterized family \(p_{\theta}(\mathbf{x})\), enabling tasks like generation (sampling new images) or downstream inference (classification, etc.).
+
+Directly modeling \(p_{\theta}(\mathbf{x})\) can be extremely challenging, especially for complex, high-dimensional data. One common approach is to introduce latent variables \(\mathbf{z}\) that describe underlying factors or structures, and then express the data distribution through marginalization:
+\[
+p_{\theta}(\mathbf{x}) = \int p_{\theta}(\mathbf{x} \mid \mathbf{z}) p_{\theta}(\mathbf{z})\,d\mathbf{z}.
+\]
+
+Here, \(p_{\theta}(\mathbf{x}\mid\mathbf{z})\) is often simpler to model than \(p_{\theta}(\mathbf{x})\) itself. For example, \(\mathbf{z}\) might represent attributes like a dog's breed, pose, or lighting, making it easier to build a model that generates images \(\mathbf{x}\) given \(\mathbf{z}\). We also choose a prior \(p_{\theta}(\mathbf{z})\) that is tractable, such as a Gaussian.
+
+The challenge is that computing \(p_{\theta}(\mathbf{x})\) requires integrating over \(\mathbf{z}\), which is typically intractable for complex models. This makes it hard to directly optimize parameters \(\theta\) by maximum likelihood.
+
+\textbf{Role of the Posterior and Variational Inference}:
+  Remember our goal is to find parameters $\theta$ that will optimize $\log p_{\theta}(\bm{x})$. Using mathematical tricks, we use posterior $p_{\theta}(\bm{z} | \bm{x})$ - in fact an approximation $q_{\phi}(\bm{z} | \bm{x})$ - and by choosing $\phi$ such that $q_{\phi}( \bm{z} | \bm{z})$ is close to $p_{\theta}(\bm{z})$, we increase $\log p_{\theta}(\bm{x})$. 
+
+Specifically, note that:
+\[
+  \log p_{\theta}(\bm{x}) = \log \int p_{\theta}(\bm{x} | \bm{z}) p_{\theta}(\bm{z}) \d{\bm{z}}
+\]
+
+We Multiply and divide by  $q_{\phi}(\bm{z} | \bm{x})$:
+\[
+  \log p_{\theta}(\bm{x}) = \log \int q_{\phi}(\bm{z} | \bm{x}) \frac{ p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})} \d{\bm{z}}
+\]
+Recall Jensen inequality for concave function states that $f(E[X]) \geq E[f(X)]$, and since $\log$ is concave, we get that $\log E[X] \geq E [\log X]$. Define $X = \frac{p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})}$, and we get:
+\[
+  \log p_{\theta}(\bm{x}) \geq \int q_{\phi}(\bm{z} | \bm{x}) \log \frac{p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})} \d{\bm{z}}
+\]
+
+Rewrite the integrand using $p_{\theta}(\bm{x}, \bm{z}) = p_{\theta}(\bm{x} | \bm{z}) p_{\theta}(\bm{z})$ and we get:
+\[
+\log p_{\theta}(\bm{x}) \geq \int q_{\phi}(\bm{z} | \bm{x}) \log \frac{p_{\theta}(\bm{x} | \bm{z}) p_{\theta}(\bm{z})}{q_{\phi}(\bm{z} | \bm{x})}  \d{\bm{z}}
+\]
+This gives us:
+\begin{align*}
+  \log p_{\theta}(\bm{x}) & \geq E_{q_{\phi}(\bm{z} | \bm{x})}\big[  p_{\theta}(\bm{x} | \bm{z}) \big]   + E_{q_{\phi}(\bm{z} | \bm{x})} \big[  \log p_{\theta}(\bm{z}) \big] - E_{q_{\phi}(\bm{z} | \bm{x})} \big[ \log q_{\phi}(\bm{z} | \bm{x}) \big] \\
+  &= E_{q_{\phi}(\bm{z} | \bm{x})}\big[  p_{\theta}(\bm{x} | \bm{z}) \big]   -  \Big[ E_{q_{\phi}(\bm{z} | \bm{x})} \big[ \log q_{\phi}(\bm{z} | \bm{x}) \big]  - E_{q_{\phi}(\bm{z} | \bm{x})} \big[  \log p_{\theta}(\bm{z}) \big]   \Big]  \\
+  &= E_{q_{\phi}(\bm{z} | \bm{x})}\big[  p_{\theta}(\bm{x} | \bm{z}) \big]  - KL \Big( q_{\phi}(\bm{z} | \bm{x})  || p_{\theta}(\bm{z}) \Big) 
+\end{align*}
+
+This is the Evidence Lower BOund (ELBO):
+\[
+\log p_{\theta}(\mathbf{x}) \ge \underbrace{\mathbb{E}_{q_{\phi}(\mathbf{z}\mid\mathbf{x})}[\log p_{\theta}(\mathbf{x}\mid\mathbf{z})] - \text{KL}(q_{\phi}(\mathbf{z}\mid\mathbf{x})\|p_{\theta}(\mathbf{z}))}_{\text{ELBO}(\theta,\phi)}.
+\]
+
+If we fix $\theta$ and adjust $\phi$, making $q_{\phi}(\bm{z} | \bm{x})$ closer to $p_{\theta}(\bm{z})$ we increase $\log p_{\theta}(\bm{x})$.
+
+
+In summary, latent variable models and the introduction of a variational posterior allow us to deal with intractable marginal likelihoods by converting the problem into one of optimizing a tractable lower bound, thereby enabling effective parameter learning even for very complex data like images.
+\end{remark}
+
+
+
+
 \begin{definition}[VAE] The VAE can be viewed  as two coupled, but independently parameterized models: The encoder or the recognition model,and the generation model (aka decoder). The recognition model provides (an approximation to) the posterior for latent variables conditioned on observed data $p_{\theta}(z|x)$. 
 \end{definition}
 
