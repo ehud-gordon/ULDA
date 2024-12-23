@@ -179,6 +179,22 @@ This gives us:
   &= E_{q_{\phi}(\bm{z} | \bm{x})}\big[  p_{\theta}(\bm{x} | \bm{z}) \big]   -  \Big[ E_{q_{\phi}(\bm{z} | \bm{x})} \big[ \log q_{\phi}(\bm{z} | \bm{x}) \big]  - E_{q_{\phi}(\bm{z} | \bm{x})} \big[  \log p_{\theta}(\bm{z}) \big]   \Big]  \\
   &= E_{q_{\phi}(\bm{z} | \bm{x})}\big[  p_{\theta}(\bm{x} | \bm{z}) \big]  - KL \Big( q_{\phi}(\bm{z} | \bm{x})  || p_{\theta}(\bm{z}) \Big) 
 \end{align*}
+with:
+\[
+  \log p_{\theta}(\bm{x}) =  E_{q_{\phi}(\bm{z} | \bm{x})} \left[ \log \left[ \frac{p_{\theta}(\bm{x}, \bm{z})}{ q_{\phi}(\bm{z} | \bm{x})} \right] \right] + E_{q_{\phi}(\bm{z} | \bm{x})} \left[  \log \left[  \frac{q_{\phi}(\bm{z} | \bm{x})}{p_{\theta}(\bm{z} | \bm{x})} \right] \right]
+\]
+where we denote the ELBO by:
+\[
+  \mathcal{L}_{\theta, \phi}( \bm{x}) = E_{q_{\phi}(\bm{z} | \bm{x})} [\log p_{\theta}(\bm{x}, \bm{z}) - \log q_{\phi}(\bm{z} | \bm{x})] 
+\]
+and:
+\[
+  D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big) = E_{q_{\phi}(\bm{z} | \bm{x})} \left[  \log \left[  \frac{q_{\phi}(\bm{z} | \bm{x})}{p_{\theta}(\bm{z} | \bm{x})} \right] \right]  
+\]
+so:
+\[
+  \log p_{\theta}(\bm{x}) = \mathcal{L}_{\theta, \phi}(\bm{x}) + D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big) 
+\]
 
 This is the Evidence Lower BOund (ELBO):
 \[
@@ -196,6 +212,167 @@ In summary, latent variable models and the introduction of a variational posteri
 
 \begin{definition}[VAE] The VAE can be viewed  as two coupled, but independently parameterized models: The encoder or the recognition model,and the generation model (aka decoder). The recognition model provides (an approximation to) the posterior for latent variables conditioned on observed data $p_{\theta}(z|x)$. 
 \end{definition}
+
+
+\newpage
+You've hit upon a crucial point of understanding the Variational Autoencoder (VAE) and its optimization objective, the Evidence Lower Bound (ELBO). Your intuition is partially correct, highlighting a subtle but important detail. Let's break it down step-by-step:
+
+**1. The Ultimate Goal: Maximizing the Log-Likelihood**
+
+Yes, the overarching goal in training a generative model like a VAE is to find the parameters $\theta$ of the generative model $p_\theta(\mathbf{x})$ that maximize the likelihood of the observed data $\mathbf{x}$. This means we want to find parameters such that the model assigns a high probability to the data we've seen. Mathematically, we want to maximize $\log p_{\theta}(\mathbf{x})$.
+
+**Why is Directly Maximizing $\log p_{\theta}(\mathbf{x})$ Difficult?**
+
+The problem is that calculating $p_{\theta}(\mathbf{x})$ directly often involves marginalizing over the latent variable $\mathbf{z}$:
+
+\[
+p_{\theta}(\mathbf{x}) = \int p_{\theta}(\mathbf{x}, \mathbf{z}) d\mathbf{z} = \int p_{\theta}(\mathbf{x}|\mathbf{z}) p_{\theta}(\mathbf{z}) d\mathbf{z}
+\]
+
+This integral is often intractable, meaning we can't compute it analytically or efficiently. This intractability is the core motivation behind using the ELBO.
+
+**2. The Role of the ELBO: A Tractable Lower Bound**
+
+The ELBO, $\mathcal{L}_{\theta, \phi}(\bm{x})$, is introduced as a *lower bound* on the log-likelihood $\log p_{\theta}(\bm{x})$. This is evident from the equation you provided:
+
+\[
+\log p_{\theta}(\bm{x}) = \mathcal{L}_{\theta, \phi}(\bm{x}) + D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big)
+\]
+
+Since the KL divergence $D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big)$ is always non-negative, we have:
+
+\[
+\log p_{\theta}(\bm{x}) \ge \mathcal{L}_{\theta, \phi}(\bm{x})
+\]
+
+This confirms that the ELBO is indeed a lower bound.
+
+**3. What Happens When We Maximize the ELBO?**
+
+Now, let's consider what happens when we try to maximize the ELBO with respect to both the generative parameters $\theta$ and the inference network parameters $\phi$.
+
+* **Maximizing $\mathcal{L}_{\theta, \phi}(\bm{x})$ pushes the lower bound upwards.**  Since $\log p_{\theta}(\bm{x}) = \mathcal{L}_{\theta, \phi}(\bm{x}) + D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big)$, increasing the lower bound means we are either increasing the log-likelihood itself or decreasing the KL divergence (or both).
+
+* **The interplay between the terms:**  It's crucial to understand that we are optimizing the ELBO with respect to *both* $\theta$ and $\phi$.
+    * **Optimizing with respect to $\phi$ (Encoder):**  By optimizing $\phi$, we are trying to find an approximate posterior $q_{\phi}(\mathbf{z}|\mathbf{x})$ that is close to the true (but intractable) posterior $p_{\theta}(\mathbf{z}|\mathbf{x})$. This directly minimizes the KL divergence term $D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big)$.
+    * **Optimizing with respect to $\theta$ (Decoder):** By optimizing $\theta$, we are trying to improve the generative model $p_{\theta}(\mathbf{x}|\mathbf{z})p_{\theta}(\mathbf{z})$. This directly affects the term $E_{q_{\phi}(\bm{z} | \bm{x})} [\log p_{\theta}(\bm{x}, \bm{z})]$ in the ELBO.
+
+**Your Intuition and the Key Insight**
+
+You are correct that if we were *only* minimizing the KL divergence without considering the other term in the ELBO, we could potentially achieve a small KL divergence without actually improving the generative model $p_\theta(\mathbf{x})$.
+
+However, the optimization process of the ELBO simultaneously tries to:
+
+1. **Reconstruct the data well:** The term $E_{q_{\phi}(\bm{z} | \bm{x})} [\log p_{\theta}(\bm{x}, \bm{z})] = E_{q_{\phi}(\bm{z} | \bm{x})} [\log p_{\theta}(\bm{x}|\mathbf{z}) + \log p_{\theta}(\mathbf{z})]$ encourages the decoder $p_{\theta}(\mathbf{x}|\mathbf{z})$ to reconstruct the input $\mathbf{x}$ accurately from the latent representation $\mathbf{z}$ sampled from the encoder $q_{\phi}(\mathbf{z}|\mathbf{x})$.
+
+2. **Make the approximate posterior close to the prior:** The term $-D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z}) \big)$ (after expanding the ELBO) encourages the encoder's distribution $q_{\phi}(\mathbf{z}|\mathbf{x})$ to be close to the prior distribution $p_{\theta}(\mathbf{z})$ over the latent space. This regularizes the latent space and prevents overfitting. *Note: The KL divergence in your equation involves the true posterior, which is intractable. In practice, the ELBO is often rewritten using the prior $p_\theta(\mathbf{z})$ to make it tractable.*
+
+**Why Maximizing the ELBO Helps Maximize the Log-Likelihood**
+
+By maximizing the ELBO with respect to both $\theta$ and $\phi$, we are effectively "tightening" the lower bound. As we increase the ELBO, since $\log p_{\theta}(\bm{x}) = \mathcal{L}_{\theta, \phi}(\bm{x}) + D_{KL} \big( q_{\phi}(\bm{z} | \bm{x}) || p_{\theta}(\bm{z} | \bm{x}) \big)$, and the KL divergence is always non-negative, the log-likelihood itself must also increase (or at least not decrease).
+
+**Analogy:** Imagine you're trying to reach the ceiling of a room. The ELBO is like a platform you can stand on. By maximizing the ELBO, you're raising the platform. As you raise the platform, you get closer to the ceiling (the log-likelihood). You can't go higher than the ceiling, and the distance between your platform and the ceiling is the KL divergence.
+
+**In summary:**
+
+* **Our goal is to maximize $\log p_{\theta}(\mathbf{x})$.**
+* **Directly maximizing $\log p_{\theta}(\mathbf{x})$ is often intractable.**
+* **The ELBO, $\mathcal{L}_{\theta, \phi}(\bm{x})$, is a tractable lower bound on $\log p_{\theta}(\mathbf{x})$.**
+* **Maximizing the ELBO with respect to both $\theta$ and $\phi$ simultaneously encourages good data reconstruction and makes the approximate posterior close to the prior (or true posterior).**
+* **By maximizing the ELBO, we are effectively pushing the lower bound upwards, which in turn encourages the log-likelihood to increase.**  We are not just minimizing the KL divergence in isolation; the optimization process is intertwined.
+
+**The Task and How ELBO Helps:**
+
+The task is to find the parameters $\theta$ of a generative model that can explain the observed data. Maximizing the log-likelihood $\log p_{\theta}(\mathbf{x})$ directly achieves this. Since this is intractable, we resort to maximizing the ELBO.
+
+Maximizing the ELBO gives us:
+
+1. **A way to approximate the intractable log-likelihood:** While we don't get the exact value of $\log p_{\theta}(\mathbf{x})$, the ELBO serves as a useful surrogate objective.
+2. **A framework for learning meaningful latent representations:** The encoder $q_{\phi}(\mathbf{z}|\mathbf{x})$ learns to map data points to a latent space, and the KL divergence term encourages this latent space to have desirable properties (e.g., being smooth and continuous).
+3. **A balance between reconstruction and regularization:** The two terms in the ELBO work in concert. The reconstruction term ensures the model can generate data similar to the training data, while the KL divergence term prevents overfitting and encourages a well-structured latent space.
+
+Therefore, maximizing the ELBO is not just about minimizing the KL divergence. It's about finding a sweet spot where the generative model explains the data well (high reconstruction likelihood) and the approximate posterior is a reasonable approximation of the true posterior (low KL divergence). This indirectly leads to finding parameters $\theta$ that result in a higher (though we can't directly compute it) $\log p_{\theta}(\mathbf{x})$.
+
+
+
+
+
+\newpage
+
+Okay, let's break down how to compute $\log p_{\theta}(\mathbf{x}^{(i)}, \mathbf{z}^{(i)})$ during the decoder's forward pass in a VAE.
+
+**Mathematical Formulation**
+
+Recall the basic factorization of the joint probability:
+
+\[
+p_{\theta}(\mathbf{x}^{(i)}, \mathbf{z}^{(i)}) = p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) p_{\theta}(\mathbf{z}^{(i)})
+\]
+
+Taking the logarithm of both sides, we get:
+
+\[
+\log p_{\theta}(\mathbf{x}^{(i)}, \mathbf{z}^{(i)}) = \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) + \log p_{\theta}(\mathbf{z}^{(i)})
+\]
+
+So, to compute the log-joint probability, we need to compute two terms:
+
+1. **The log-likelihood of the data given the latent variable:** $\log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$
+2. **The log-prior probability of the latent variable:** $\log p_{\theta}(\mathbf{z}^{(i)})$
+
+Let's discuss each term in detail:
+
+**1. Computing $\log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$**
+
+*   **The Decoder's Role:** The decoder network, parameterized by $\theta$, takes the latent variable $\mathbf{z}^{(i)}$ as input and outputs the parameters of a distribution over the data space. The choice of this distribution depends on the nature of your data. Common choices include:
+
+    *   **Gaussian Distribution:** If your data $\mathbf{x}$ is continuous, you often model $p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$ as a multivariate Gaussian distribution. The decoder will output the mean $\bm{\mu}_{\theta}(\mathbf{z}^{(i)})$ and the covariance matrix $\mathbf{\Sigma}_{\theta}(\mathbf{z}^{(i)})$ (or a related parameterization like the log-standard deviation for a diagonal covariance). Assuming a diagonal covariance for simplicity, where $\mathbf{\Sigma}_{\theta}(\mathbf{z}^{(i)}) = \text{diag}(\sigma_{\theta,1}^2(\mathbf{z}^{(i)}), \dots, \sigma_{\theta,D_x}^2(\mathbf{z}^{(i)}))$, the log-likelihood is:
+
+        \[
+        \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) = \sum_{j=1}^{D_x} \log \mathcal{N}(x_j^{(i)} ; \mu_{\theta,j}(\mathbf{z}^{(i)}), \sigma_{\theta,j}^2(\mathbf{z}^{(i)}))
+        \]
+
+        Expanding the Gaussian log-likelihood:
+
+        \[
+        \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) = -\frac{D_x}{2} \log(2\pi) - \frac{1}{2} \sum_{j=1}^{D_x} \left( \log \sigma_{\theta,j}^2(\mathbf{z}^{(i)}) + \frac{(x_j^{(i)} - \mu_{\theta,j}(\mathbf{z}^{(i)}))^2}{\sigma_{\theta,j}^2(\mathbf{z}^{(i)})} \right)
+        \]
+
+    *   **Bernoulli Distribution:** If your data $\mathbf{x}$ consists of binary values (e.g., pixel intensities are 0 or 1), you might model $p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$ as a product of independent Bernoulli distributions. The decoder will output the probabilities $\mathbf{p}_{\theta}(\mathbf{z}^{(i)})$ of each dimension being 1. The log-likelihood is:
+
+        \[
+        \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) = \sum_{j=1}^{D_x} \left[ x_j^{(i)} \log(p_{\theta,j}(\mathbf{z}^{(i)})) + (1 - x_j^{(i)}) \log(1 - p_{\theta,j}(\mathbf{z}^{(i)})) \right]
+        \]
+
+*   **Implementation:** In your code, the decoder network (a neural network) will take $\mathbf{z}^{(i)}$ as input and output the parameters needed for the chosen distribution (e.g., means and log-variances for a Gaussian, or probabilities for a Bernoulli). You then use these parameters and the formula for the log-likelihood of that distribution to compute $\log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$.
+
+**2. Computing $\log p_{\theta}(\mathbf{z}^{(i)})$**
+
+*   **The Prior Distribution:**  The prior distribution over the latent space, $p_{\theta}(\mathbf{z})$, is typically chosen to be a simple distribution, independent of the data and often fixed. The most common choice is the standard normal distribution:
+
+    \[
+    p_{\theta}(\mathbf{z}) = \mathcal{N}(\mathbf{z} ; \mathbf{0}, \mathbf{I})
+    \]
+
+    where $\mathbf{0}$ is a vector of zeros and $\mathbf{I}$ is the identity matrix. The log-prior probability for a single latent sample $\mathbf{z}^{(i)}$ is:
+
+    \[
+    \log p_{\theta}(\mathbf{z}^{(i)}) = \log \mathcal{N}(\mathbf{z}^{(i)} ; \mathbf{0}, \mathbf{I}) = -\frac{D_z}{2} \log(2\pi) - \frac{1}{2} \sum_{k=1}^{D_z} (z_k^{(i)})^2
+    \]
+
+    where $D_z$ is the dimensionality of the latent space.
+
+*   **Implementation:**  Since the prior is fixed (typically a standard normal), this calculation is straightforward. You simply apply the log-likelihood formula of the chosen prior distribution to the sampled latent variable $\mathbf{z}^{(i)}$.
+
+**Putting it Together**
+
+Once you have computed both $\log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)})$ and $\log p_{\theta}(\mathbf{z}^{(i)})$, you can add them together to obtain the log-joint probability:
+
+\[
+\log p_{\theta}(\mathbf{x}^{(i)}, \mathbf{z}^{(i)}) = \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) + \log p_{\theta}(\mathbf{z}^{(i)})
+\]
+
+
 
 \end{document}
 
