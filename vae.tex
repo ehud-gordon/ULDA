@@ -153,18 +153,18 @@ Here, \(p_{\theta}(\mathbf{x}\mid\mathbf{z})\) is often simpler to model than \(
 The challenge is that computing \(p_{\theta}(\mathbf{x})\) requires integrating over \(\mathbf{z}\), which is typically intractable for complex models. This makes it hard to directly optimize parameters \(\theta\) by maximum likelihood.
 
 \textbf{Role of the Posterior and Variational Inference}:
-  Remember our goal is to find parameters $\theta$ that will optimize $\log p_{\theta}(\bm{x})$. Using mathematical tricks, we use posterior $p_{\theta}(\bm{z} | \bm{x})$ - in fact an approximation $q_{\phi}(\bm{z} | \bm{x})$ - and by choosing $\phi$ such that $q_{\phi}( \bm{z} | \bm{z})$ is close to $p_{\theta}(\bm{z})$, we increase $\log p_{\theta}(\bm{x})$. 
+  Remember our goal is to find parameters $\theta$ that will optimize $\log p_{\theta}(\bm{x})$. Using mathematical tricks, we use posterior $p_{\theta}(\bm{z} | \bm{x})$ - in fact an approximation $q_{\phi}(\bm{z} | \bm{x})$ - and by choosing $\phi$ such that $q_{\phi}( \bm{z} | \bm{x})$ is close to $p_{\theta}(\bm{z})$, we increase $\log p_{\theta}(\bm{x})$. 
 
 Specifically, note that:
 \[
   \log p_{\theta}(\bm{x}) = \log \int p_{\theta}(\bm{x} | \bm{z}) p_{\theta}(\bm{z}) \d{\bm{z}}
 \]
 
-We Multiply and divide by  $q_{\phi}(\bm{z} | \bm{x})$:
+We multiply and divide by  $q_{\phi}(\bm{z} | \bm{x})$:
 \[
   \log p_{\theta}(\bm{x}) = \log \int q_{\phi}(\bm{z} | \bm{x}) \frac{ p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})} \d{\bm{z}}
 \]
-Recall Jensen inequality for concave function states that $f(E[X]) \geq E[f(X)]$, and since $\log$ is concave, we get that $\log E[X] \geq E [\log X]$. Define $X = \frac{p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})}$, and we get:
+Recall Jensen's inequality for concave function states that $f(E[X]) \geq E[f(X)]$, and since $\log$ is concave, we get that $\log E[X] \geq E [\log X]$. Define $X = \frac{p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})}$, and we get:
 \[
   \log p_{\theta}(\bm{x}) \geq \int q_{\phi}(\bm{z} | \bm{x}) \log \frac{p_{\theta}(\bm{x}, \bm{z})}{q_{\phi}(\bm{z} | \bm{x})} \d{\bm{z}}
 \]
@@ -372,7 +372,116 @@ Once you have computed both $\log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}
 \log p_{\theta}(\mathbf{x}^{(i)}, \mathbf{z}^{(i)}) = \log p_{\theta}(\mathbf{x}^{(i)} | \mathbf{z}^{(i)}) + \log p_{\theta}(\mathbf{z}^{(i)})
 \]
 
+\newpage
+\section{Tutorial on VAE / Doresch}
+Assume we have a dataset $ D $, containing images $ X $ coming from some high-dimensional space $ \mathcal{X} $. 
+We wish to find $P(X)$. 
+However, in practice, $ P(X) $ is both intractable, too large to represent, and too large to sample. 
+Even if we knew $ P(X) $, we could not generate new samples from it. 
+We make the correct assumption that the generation process is actually the following: first we choose a \textit{latent} vector $ \bm{z} $, and then a deterministic, parametric function $ f : \mathcal{Z} \times \Theta \to \mathcal{X} $ generates $ X $. 
+We wish to optimize $ \theta $, such that when we sample $ \bm{z} $ from $ P(\bm{z}) $, and with high probability, $ f(\bm{z} ; \theta) $  will be like the $ X $ in our dataset. 
+To make this notion precise mathematically, we are aiming at maximizing the probability of each $ X $ in the training set under the entire generative process, according to:
+\[
+  P(X) = \int_{\mathcal{Z}} P(X | \bm{z}) P(\bm{z}) \d{\bm{z}}
+\]
 
+We replace the notation $ f(z ; \theta) $ by $ P(X|z)$, to make the dependence of $ X $ on $ z $ explicit. 
+We often assume:
+\begin{equation} \label{eq:DoreschEq1}
+  P(X | \bm{z} ; \theta) = \mathcal{N}(X | f(\bm{z} ; \theta), \sigma ^2 * I)
+\end{equation}
+This formalizes the notion some $ \bm{z} $ needs to result in samples that are merely \textit{like} $ X $, instead of setting $ X = f( \bm{z} ; \theta)$. 
+
+Early in training, our model will not produce output that are close to $ X$. By using gradient descent on $ \theta $, we can increase P(X) by making $ f(\bm{z} ; \theta) $ approach $ X $ for some $ \bm{z} $. 
+
+There are two problems when trying to optimize~\cref{eq:DoreschEq1}:
+\begin{enumerate}
+
+  \item How to choose define the latent variables $ \bm{z} $, i.e. decide what information they decode? The answer is: (multi-variable) Gaussian distribution. 
+  This is because, a sufficiently complicated function $ f $ can turn a Gaussian into every desired probability distribution, as is demonstrated by Inverse transform sampling. 
+  For $ f $ that is a  NN, we can imagine the first few layers turning the normally distributed $ \bm{z} $'s to the latent vectors (like digit identity, stroke weight, angle, etc.), and then using later layers to map those latent values to a fully-rendered digit. 
+\begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{inverseTransformSampling}   \end{figure}
+
+  \item Conceptually, it easy to approximate $ P(X) $  - we sample a large value of $ z $ values $ \left\{ \bm{z}_1, \ldots , \bm{z}_n \right\} $, and compute $ P(X) \approx \frac{1}{n} \sum_{i} P(X| \bm{z}_i)$. 
+  However, for high dimensional spaces, the number of samples of $ \bm{z} $ might need to be very large before we have an accurate estimate of $ P(X) $. 
+  They include a reason why this is so:
+\begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{samplingOnlyLikelihood}  \label{fig:samplingOnlyLikelihood} \end{figure}
+  So instead, we use the correct assumption, that for most $ \bm{z} $, $ P(X|\bm{z})$ will be nearly zero, and hence contribute almost nothing to our estimate of $ P(X) $. 
+  Therefore, we attempt to sample values of $ \bm{z} $ that are likely to have produced $ X $, and compute $ P(X) $ just from those.  
+  This means we need a new function $ Q(\bm{z}|X) $, the "recognition" model, which can take a value of $ X $ and give a distribution over $ \bm{z} $ values that are likely to produce $ X $. 
+  By assuming that this space of $ \bm{z} $ values that are likely under $ Q $ will be much smaller than the space of all $ \bm{z} $  that are likely under the prior $ P(\bm{z}) $. 
+  This lets us compute $ E_{\bm{z} \sim Q} P(X|\bm{z})$ relatively easy. 
+
+\end{enumerate}
+
+We now formulate our new objective. Having moved to computing $ E_{z \sim  Q}P(X | \bm{z}) $, we need to relate $ P(X) $ to $ E_{\bm{z} \sim  Q} P(X | \bm{z})$. We use some math tricks:
+\[
+  \mathrm{KL} \Big[Q(\bm{z}|X) \,||\, P(\bm{z} |X) \Big] = E_{\bm{z} \sim Q} \Big[ \log Q( \bm{z}|X) - \log P(\bm{z} | X) \Big]
+\]
+Using Bayes rule, we get:
+\[
+  \mathrm{KL} \Big[ Q(\bm{z} | X) \,||\, P( \bm{z} |X)  \Big] = E_{\bm{z} \sim  Q}  \Big[ \log Q(\bm{z} | X) - \log P(X| \bm{z}) - \log P(\bm{z}) \Big] + \log P(X)
+\]
+We negate and move sides, and get:
+\begin{equation} \label{eq:DoreschEq5}
+  \log P(X) - \mathrm{KL} \Big[ Q(\bm{z} | X) \,||\, P(\bm{z} | X)  \Big] = E_{\bm{z} \sim  Q} \Big[ \log P(X| \bm{z}) \Big] - \mathrm{KL} \Big[ Q(\bm{z} | X) \,||\, P(\bm{z}) \Big]
+\end{equation}
+
+The LHS is the quantity we wish to optimize, plus an error term for how well $ Q $ produces $ \bm{z} $ the can reproduce a given $ X $; This is small for the high-capacity $ Q $. The RHS is something we can optimize via SGD. Recall that we assume that:
+\[
+  Q(\bm{z}|X) = \mathcal{N}\big(\bm{z} | \mu(X ; \phi), \Sigma(X ; \phi) \big)
+\]
+Since we also assume Gaussian prior $ P(\bm{z})$, we get the value of $ \mathrm{KL} \Big[ Q( \bm{z} | X) \,||\, P(\bm{z}) \Big] $. 
+As For the first term, we take one sample of $ \bm{z} $, and treat $ \log P(X|z) $ (which we compute via $ f(\bm{z} ; \theta) $ as the approximation of $ E_{\bm{z} \sim  Q} \big[ \log P(X | \bm{z}) \big] $. 
+Recall we are already doing stochastic gradient descent over different values of $ X $ from a dataset $ D $. The full equation we want to optimize is:
+\begin{equation} \label{eq:DoreschEq8}
+\begin{aligned}
+  E_{X \sim  D} \Big[   \log P(X) - \mathrm{KL} \Big[ Q(\bm{z} | X) &\,||\, P(\bm{z} | X)  \Big] \Big] =\\
+  & E_{X \sim  D} \Big[  E_{\bm{z} \sim  Q} \big[ \log P(X| \bm{z}) \big] - \mathrm{KL} \big[ Q(\bm{z} | X) \,||\, P(\bm{z}) \big] \Big] 
+\end{aligned}
+\end{equation}
+Hence we can compute:
+\[
+  P(X | \bm{z}) - \mathrm{KL} \Big[ Q(\bm{z} | X) \,||\, P(\bm{z}) \Big]
+\]
+And we can take its gradient. By averaging the gradient of this function over aribtrarily many samples of $ X $ and $ \bm{z} $, the result converges to the gradient of~\cref{eq:DoreschEq8}. 
+
+
+However there is still one problem.In~\cref{eq:DoreschEq8}, $ E_{\bm{z} \sim  Q} \big[ \log P(X | \bm{z}) \big] $ depends both on the parameters of $ P $ ($ \theta $) and $ Q $ ($ \phi $). Doing back propagation on the (left) network below is impossible, since sampling is a non-continuous operation, and has no gradient. 
+\begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{DoreschReparamTrick} \label{fig:DoreschReparamTrick} \end{figure}
+
+  The solution is called the reparametrization trick. We move the sampling to an input layer, $ \epsilon \sim  \mathcal{N}(0, I) $, and then compute $ z = \mu(X) + \Sigma^{1/2} (X) * \epsilon $, where $ \mu(X), \Sigma(X) $ were computed by $ Q $. 
+
+Thus, the equation we actually take the gradient of is:
+\[
+  E_{X \sim  D} \Big[  E_{\epsilon \sim  \mathcal{N}(0,I)} \big[ \log P(X| \bm{z} = \mu(X) + \Sigma^{1/2} (X) * \epsilon) \big] - \mathrm{KL} \big[ Q(\bm{z} | X) \,||\, P(\bm{z}) \big] \Big] 
+\]
+And since this sampling is independent of $ \theta $ and $ \phi $, we don't need to do backpropagation over the sampling. 
+
+\subsection{Test Time}
+\begin{figure}[H] \centering \includegraphics[height=0.3\textheight,width=0.9\textwidth,keepaspectratio]{DoreschTestTime}  \label{fig:DoreschTestTime} \end{figure}
+
+
+
+\newpage
+\section{Diagnosing and Enhancing VAE Models}
+\ul{Bin Dai, David Wipf} Microsoft / Amazon / Tsinghua / 2019
+
+We wish to learn a probabilistic generative model of observale variables $ \bm{x} \in \mathcal{X} $, where $ \mathbb{X} $ is an $ r $-dimensional manifold embedded in $ \mathbb{R}^{d}$. Moreover, we assume that $ \mathcal{X} $  is a simple Riemannian manifold, which means there exists a diffeomorphism $ \phi : \mathcal{X} \to \mathbb{R}^{r} $ . Denote the ground-truth probability measure on $ \mathcal{X} $ as $ \mu_{gt} $ such that the probability mass of an infinitesimal $ \d{\bm{x}} $ on the manifold is $ \mu_{gt}(\d{\bm{x}}) $ , and $ \int_{\mathcal{X}} \mu_{gt} (\d{\bm{x}})  = 1$.
+
+The VAE attempts to approximate this ground truth measure, using a parameterized density $ p_{\theta}(\bm{x})$ defined across all of $ \mathbb{R}^{d}$.
+The density is further assumed to admit the latent decomposition $ p_{\theta}(\bm{x}) = \int p_{\theta}(\bm{z} | \bm{x}) p(\bm{z}) \d{\bm{z}}$, where $ z \in \mathbb{R}^{k}$ with $ k \approx r $, and prior $ p(\bm{z}) = \mathcal{N}(\bm{z} | \bm{0}, \bm{I}) $. 
+
+Ideally, we might like to minimize the negative log likelihood $ - \log p_{\theta}(\bm{x})$ averaged across the ground-truth measure $ \mu_{gt}$. i.e.:
+\[
+  \min_{\theta} \int_{\mathcal{X}} - \log p_{\theta}(\bm{x}) \mu_{gt} \left( \d{\bm{x}} \right)
+\]
+Unfortunately, the required marginalization over $ \bm{z} $ is generally infeasible. Instead, the VAE model relies on tractable \textit{encoder} $ q_{\phi}(\bm{z} | \bm{x}) $ and \textit{decoder} $ p_{\theta}(\bm{x} | \bm{z})$ distributions, where $ \phi$ represents additional trainable parameters. 
+
+The canonical VAE can be written as:
+\[
+  \mathcal{L}(\theta, \phi) := \int_{\mathcal{X}} \Big\{ - E_{q_{\phi}(\bm{z} | \bm{x})} \left[ \log p_{\theta}(\bm{x} | \bm{z}) \right] + KL[q_{\phi}(\bm{z} | \bm{x})] \Big\} \mu_{gt}(d \bm{x}) 
+\] 
 
 \end{document}
 
